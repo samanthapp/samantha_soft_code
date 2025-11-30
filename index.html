@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>S A M A N T H A | S O F T C O D E</title>
+    <!-- 引入 Tailwind CSS CDN，用於快速實現 RWD 和極簡風格 --><script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Inter (Sans), Lora (Serif) and Space Mono (Monospace for Logo/Code Comment) -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700&family=Lora:ital,wght@0,400..700;1,400..700&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <!-- 引入 Tone.js for sound generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
+    
+    <style>
+        /* 新增色彩變數 (Data Grid Aesthetic) */
+        :root {
+            --base-bg: #FAF9F6;         /* 奶油白/燕麥色 (卡片底色) */
+            --grid-border: #BBBBBB;     /* 極細灰線，作為網格分隔線 */
+            --primary-text: #333333;    /* 深炭灰/冷靜黑 */
+            --code-comment: #666666;    /* 程式碼註解色 (中灰色) */
+            --accent: #E3735E;          /* 珊瑚橘/乾燥玫瑰粉 - 心臟色 */
+            --accent-dark: #C76450;
+        }
+        
+        /* 全站風格設定 */
+        body {
+            font-family: 'Inter', Arial, sans-serif;
+            color: var(--primary-text);
+            background-color: var(--base-bg);
+            overflow-x: hidden; /* 防止跑馬燈造成水平捲動 */
+        }
+
+        /* ---------------------------------------------------- */
+        /* 1. 動態掃描線背景 (The Scanning Horizon) - 靜態網格修正 (Patch 3) */
+        .ikeda-grid {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            pointer-events: none;
+            z-index: 10; 
+            /* 創造方格紙效果：使用極低的透明度 0.03 */
+            background-image:
+                linear-gradient(rgba(0, 0, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+            background-size: 20px 20px; /* 每一格 20px 大小 */
+            background-position: center top;
+        }
+        /* ---------------------------------------------------- */
+
+        /* 3. 文字跑馬燈 (The Data Stream) */
+        #data-ticker-container {
+            overflow: hidden;
+            background-color: #f5f5f5; /* 淺灰色底 */
+            border-bottom: 1px solid var(--grid-border);
+            padding: 5px 0;
+            /* 修正：移除下方間距，使其能貼合條碼 */
+            /* margin-bottom: 2rem; */
+            z-index: 20;
+            position: relative;
+        }
+        #data-ticker {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem; /* 極小字體 */
+            color: var(--code-comment);
+            white-space: nowrap;
+            display: inline-block;
+            padding-left: 100%; /* 從右側開始流動 */
+            animation: ticker-flow 18s linear infinite; /* 速度從 25s 調整為 18s */
+        }
+        @keyframes ticker-flow {
+            to { transform: translateX(-100%); }
+        }
+        /* ---------------------------------------------------- */
+        
+        /* 條碼數據流 (Barcode Data Strip) CSS */
+        .data-barcode-strip {
+            width: 100%;
+            height: 12px; /* 高度不用太高，細細的一條更有質感 */
+            background-color: var(--base-bg); /* 跟背景一樣的顏色 */
+            overflow: hidden;
+            position: relative;
+            /* 修正：增加與下方內容區的間距，使標題有呼吸空間 */
+            margin-bottom: 4rem; 
+        }
+        /* 創造條碼紋理並加上動畫 */
+        .data-barcode-strip::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 200%; /* 寬度要比螢幕寬，才能做到無縫循環 */
+            height: 100%;
+            
+            /* --- 核心魔法：用漸層畫出不規則條碼 (線條更複雜) --- */
+            background-image: repeating-linear-gradient(
+                90deg,
+                rgba(0,0,0,0.3) 0px, rgba(0,0,0,0.3) 1px, /* 極細線 */
+                transparent 1px, transparent 4px,
+                rgba(0,0,0,0.3) 4px, rgba(0,0,0,0.3) 6px, /* 中線 */
+                transparent 6px, transparent 15px,
+                rgba(0,0,0,0.3) 15px, rgba(0,0,0,0.3) 19px, /* 粗線 */
+                transparent 19px, transparent 25px
+            );
+            
+            /* 設置基礎背景大小，確保動畫有起點 (25px 是單一重複圖案的總寬度) */
+            background-size: 25px 100%; 
+
+            /* 動畫設定：結合移動和大小脈衝 */
+            animation: data-flow 30s cubic-bezier(0.65, 0, 0.35, 1) infinite,
+                       granularity-pulse 8s ease-in-out infinite alternate;
+        }
+        /* 定義流動動畫 */
+        @keyframes data-flow {
+            0% {
+                transform: translateX(0);
+            }
+            100% {
+                transform: translateX(-50%); /* 向左移動一半的距離，達到無縫循環 */
+            }
+        }
+        /* 定義顆粒大小脈衝動畫 */
+        @keyframes granularity-pulse {
+            0% { background-size: 25px 100%; } /* 預設寬度 */
+            50% { background-size: 40px 100%; } /* 條碼拉伸，感覺更稀疏/慢速 */
+            100% { background-size: 25px 100%; }
+        }
+        /* ---------------------------------------------------- */
+        
+        /* Logo 和標題排版 */
+        .logo { font-family: 'Space Mono', monospace; letter-spacing: 0.35em; font-weight: 400; font-size: 1.5rem; color: var(--primary-text); padding: 0 5px; }
+        @media (max-width: 640px) { .logo { font-size: 1.1rem; letter-spacing: 0.2em; } }
+        @media (max-width: 380px) { .logo { font-size: 1rem; letter-spacing: 0.15em; } }
+        .mobile-logo-break { display: none; }
+        @media (max-width: 1023px) { .mobile-logo-break { display: block; content: " "; height: 0; } }
+
+        /* 主標題 (註解風格) */
+        #main-title {
+            font-family: 'Space Mono', monospace;
+            font-weight: 400; 
+            font-size: 1rem;
+            letter-spacing: 0.1em;
+            color: var(--code-comment); /* 灰色註解色 */
+            /* 修正：增加與下方篩選器區塊的間距 */
+            margin-bottom: 5rem; 
+            text-transform: none;
+        }
+        
+        /* Fix 1: 強制商品名稱使用乾淨無襯線體，並調整權重 */
+        .product-name, .category-info h2 {
+            font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
+            font-weight: 500; /* 修正：設定為 500，讓字體更現代硬朗 */
+        }
+
+        /* 產品名稱和價格字體 */
+        #detail-name { font-family: 'Lora', serif; font-size: 2.2rem; letter-spacing: 0.25em; text-transform: uppercase; }
+        .product-price { font-family: 'Space Mono', monospace; }
+        .data-decoration {
+            font-family: 'Space Mono', monospace;
+            font-size: 0.7rem;
+            color: var(--code-comment);
+            opacity: 0.7;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        /* 2. 數據網格化佈局 (The Data Grid) */
+        .product-grid-container {
+            /* 讓網格間隙看起來像 1px 的線條 */
+            background-color: var(--grid-border); 
+            padding: 1px; /* 外部邊界 */
+            margin: 0 auto;
+        }
+        .product-grid {
+            /* 設置 1px 的間隔 */
+            gap: 1px 1px; 
+            background-color: var(--base-bg); /* 背景設為 base-bg，讓網格線顏色透出來 */
+            
+            grid-template-columns: repeat(1, minmax(0, 1fr)); 
+        }
+        @media (min-width: 640px) { .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+        @media (min-width: 1024px) { .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+        
+        /* Fix 2: 增加卡片內邊距以創造「呼吸空間」 */
+        .product-card {
+            background-color: var(--base-bg); /* 確保卡片內部是淺色 */
+            padding: 30px; /* 內邊距從 20px 增加到 30px */
+            transition: none; /* 移除舊的 transform transition */
+        }
+        
+        /* Fix 3: 價格層次 (原價) */
+        .detail-original-price {
+            color: var(--code-comment); /* 灰色，視覺退後 */
+            font-family: 'Space Mono', monospace;
+            font-size: 1rem; /* 較小字體 */
+            text-decoration: line-through;
+            margin-bottom: 0;
+            display: block;
+        }
+        /* 確保售價使用等寬體且粗體 */
+        .detail-price {
+            font-family: 'Space Mono', monospace;
+            font-weight: 800; /* 確保夠粗 */
+        }
+        
+        /* 4. 滑鼠互動：Glitch 故障藝術 */
+        .product-card:hover img {
+            animation: glitch-anim 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+            transform: translate(0); /* 重設 baseline */
+        }
+        @keyframes glitch-anim {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+
+        /* 顏色與狀態 */
+        .hidden { display: none !important; }
+        /* 修正：移除 nav-links 的 white-space: nowrap 讓手機版連結換行 */
+        #nav-links { 
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; 
+            background-color: var(--base-bg); 
+            /* white-space: nowrap; <--- 移除此行 */
+        }
+        #nav-links a {
+            white-space: normal; /* 確保連結內容可以換行 */
+        }
+
+        .text-black { color: var(--primary-text) !important; }
+        .border-black, .border-gray-200 { border-color: var(--primary-text) !important; }
+        .bg-light-purple { background-color: var(--base-bg); }
+        
+        /* Accent Colors */
+        .add-to-cart { background-color: var(--accent); color: white; border-color: var(--accent); }
+        .add-to-cart:hover { background-color: var(--accent-dark); border-color: var(--accent-dark); }
+        .border-accent { border-color: var(--accent) !important; }
+        .variation-button:not(:disabled):hover { background-color: var(--accent); color: white; border-color: var(--accent); }
+        .ring-accent-color { box-shadow: 0 0 0 2px var(--accent); border-color: var(--accent) !important; }
+
+        @keyframes pulse-accent {
+            0% { transform: scale(1); background-color: var(--accent); }
+            50% { transform: scale(1.05); background-color: var(--accent-dark); }
+            100% { transform: scale(1); background-color: var(--accent); }
+        }
+        .add-to-cart.animate-pulse { animation: pulse-accent 0.3s ease-in-out 3; }
+
+        /* ---------------------------------------------------- */
+        /* Fixes for Filter UI */
+        .filter-controls select {
+             font-family: 'Space Mono', monospace; /* 1. 等寬字體 */
+             border-radius: 0; /* 2. 直角邊框 */
+             border: 1px solid var(--primary-text); /* 2. 細線邊框 */
+             background-color: transparent; /* 3. 背景透明化 */
+             padding: 4px 10px;
+        }
+        
+        /* ---------------------------------------------------- */
+        /* Landing Page Styles: Vertical Celine List */
+        #landing-category-grid {
+             /* 移除 Landing View 的 Grid 樣式，改用 Flex 垂直佈局 */
+            display: flex;
+            flex-direction: column;
+            gap: 2rem; /* 分類卡片之間的垂直間距 */
+            /* 新增系統日誌區塊的 Flex 佈局 */
+            margin-bottom: 4rem; /* 與下方的頁尾或邊界拉開距離 */
+        }
+
+        .vertical-category-card {
+            border: 1px solid var(--grid-border);
+            border-radius: 0;
+            padding: 0; /* 移除內邊距，由子元素控制 */
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            flex-direction: column;
+            background-color: var(--base-bg);
+            
+            /* 讓卡片在桌面端水平排列 */
+            @media (min-width: 768px) {
+                flex-direction: row;
+                align-items: stretch;
+            }
+        }
+        .vertical-category-card:hover {
+            box-shadow: 0 0 0 2px var(--accent);
+        }
+
+        .category-image-container {
+            width: 100%;
+            height: 300px; /* 設置圖片區塊固定高度 */
+            overflow: hidden;
+            @media (min-width: 768px) {
+                width: 30%; /* 圖片佔據左側 30% */
+                height: 400px;
+            }
+        }
+        .category-image-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+            filter: grayscale(0.2); /* 微灰度，增加精緻感 */
+        }
+        .vertical-category-card:hover img {
+            transform: scale(1.05);
+            filter: grayscale(0);
+        }
+
+        .category-info {
+            padding: 3rem 2rem;
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: flex-start;
+        }
+
+        .category-info h2 {
+            font-family: 'Inter', sans-serif; /* 修正：使用更硬朗的 Sans-Serif */
+            font-size: 1.5rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--primary-text);
+            margin-bottom: 0.5rem;
+        }
+        .category-info p {
+            font-family: 'Inter', sans-serif;
+            font-size: 0.9rem;
+            color: var(--code-comment);
+            margin-top: 1rem;
+        }
+        .category-view-link {
+             background-color: var(--primary-text); /* 黑色按鈕 */
+             color: var(--base-bg); /* 白色文字 */
+             padding: 8px 16px;
+             font-size: 0.8rem;
+             margin-top: 1.5rem; /* 拉開與文字的距離 */
+             display: inline-block;
+             font-family: 'Space Mono', monospace;
+             text-decoration: none;
+             border-radius: 0;
+             border: 1px solid var(--primary-text);
+             transition: all 0.2s;
+        }
+        .vertical-category-card:hover .category-view-link {
+            background-color: var(--accent); /* Hover 時變為強調色 */
+            border-color: var(--accent);
+        }
+        
+        /* 系統日誌區塊樣式 (Fix 3: 結構化對齊) */
+        #system-log-container {
+            border: 1px solid var(--grid-border);
+            padding: 2rem;
+            background-color: var(--base-bg);
+            /* 手機版佔滿，桌面版在右側 */
+            width: 100%;
+            min-height: 400px;
+        }
+        .log-item {
+            display: flex; /* 啟用 Flexbox 進行排版對齊 */
+            font-family: 'Space Mono', monospace;
+            font-size: 0.85rem;
+            line-height: 1.8;
+            margin-bottom: 5px; /* 增加行間距 */
+        }
+        .log-date {
+            color: var(--code-comment);
+            width: 95px; /* 固定寬度，確保所有日期對齊 */
+            flex-shrink: 0;
+        }
+        .log-category {
+            color: var(--accent);
+            font-weight: 700;
+            width: 130px; /* 固定寬度，確保所有標籤對齊 */
+            flex-shrink: 0;
+        }
+        .log-content {
+            color: var(--primary-text);
+            flex-grow: 1;
+            word-break: break-all; /* 讓長中文內容在達到邊界時可以換行 */
+        }
+        
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <!-- 1. 動態掃描線背景 (The Scanning Horizon) - 現已改為靜態網格 -->
+    <div class="ikeda-grid"></div>
+
+    <!-- Header 頂部導航 -->
+    <!-- 修正：增加 Logo 區塊的垂直間距 -->
+    <header class="border-b border-black py-10 px-4 sm:px-10 sticky top-0 z-50 bg-base-bg">
+        <nav class="flex justify-between items-center max-w-7xl mx-auto relative">
+            <!-- Logo: S A M A N T H A | S O F T C O D E -->
+            <a href="#" class="logo text-xl font-bold uppercase" onclick="showLandingPage()">
+                S&nbsp;A&nbsp;M&nbsp;A&nbsp;N&nbsp;T&nbsp;H&nbsp;A &nbsp; |
+                <span class="mobile-logo-break"></span>
+                S&nbsp;O&nbsp;F&nbsp;T &nbsp; C&nbsp;O&nbsp;D&nbsp;E
+            </a>
+            
+            <div class="flex items-center space-x-4">
+                <!-- 5. 聲音開關 -->
+                <button id="audio-toggle" class="text-xs font-mono uppercase border border-black px-2 py-1 transition duration-200 hover:bg-gray-200">
+                    [ AUDIO OFF ]
+                </button>
+                <!-- 漢堡選單按鈕 (只在小螢幕顯示) --><button id="menu-toggle" class="lg:hidden text-2xl z-20">☰</button>
+            </div>
+
+
+            <!-- 導航連結 (RWD 響應式) -->
+            <div id="nav-links" class="nav-links lg:flex lg:relative lg:p-0 lg:h-auto lg:w-auto lg:bg-transparent lg:shadow-none lg:translate-x-0 absolute top-0 left-0 w-full h-screen bg-light-purple p-10 transform -translate-x-full flex-col items-start space-y-6 lg:space-y-0 lg:space-x-8 text-sm uppercase z-10 opacity-0 pointer-events-none">
+                <!-- 連結將由 JS 動態生成 -->
+            </div>
+        </nav>
+    </header>
+
+    <!-- 3. 文字跑馬燈 (The Data Stream) -->
+    <div id="data-ticker-container">
+        <span id="data-ticker">S Y S T E M &nbsp; O N L I N E &nbsp; . . . &nbsp; C U R A T E D &nbsp; D A T A &nbsp; R E C O R D &nbsp; I N I T I A T E D &nbsp; . . . &nbsp; V E R &nbsp; 1 . 0 . 1 &nbsp; . . . &nbsp; 0 0 1 0 1 1 0 &nbsp; 1 1 0 1 0 0 1 0 1 0 1 0 &nbsp; 0 0 1 1 1 1 0</span>
+    </div>
+
+    <!-- 新增：數據條碼 (Barcode Data Strip) -->
+    <div class="data-barcode-strip"></div>
+    
+    <main class="max-w-7xl mx-auto px-4 sm:px-10 py-12">
+        <!-- 主標題 -->
+        <h1 id="main-title" class="font-normal text-center tracking-widest">【 // CURATED ARCHIVE 】</h1>
+        
+        <!-- ============================================== -->
+        <!-- 新增: 主頁面視圖 (Landing Page) -->
+        <!-- ============================================== -->
+        <div id="landing-view">
+             <!-- Flex 佈局實現不對稱平衡 -->
+            <div class="flex flex-col md:flex-row gap-8">
+                <!-- 左側：精選系列 (佔據主要寬度) -->
+                <div class="flex-grow">
+                    <!-- Fix 2: 確保兩個主標題對齊，且使用相同樣式 -->
+                    <h2 class="text-2xl font-mono mb-6">:: FEATURED COLLECTIONS</h2>
+                    <div id="landing-category-grid">
+                        <!-- 分類卡片將由 JS 渲染 -->
+                    </div>
+                </div>
+
+                <!-- 右側：系統日誌 (佔據較窄寬度) -->
+                <div class="md:w-1/3 mt-8 md:mt-0">
+                     <!-- Fix 2: 確保兩個主標題對齊，且使用相同樣式 -->
+                     <h2 class="text-2xl font-mono mb-6">:: S Y S T E M _ L O G</h2>
+                    <div id="system-log-container">
+                        <!-- Log entries (Fix 3: 確保 Monospace 對齊) -->
+                        <div class="log-item">
+                            <span class="log-date">2025.11.30</span>
+                            <span class="log-category">[ N E W ]</span>
+                            <span class="log-content">內褲兔車長吊飾數據載入完成。</span>
+                        </div>
+                         <div class="log-item">
+                            <span class="log-date">2025.11.28</span>
+                            <span class="log-category">[ UPDATE ]</span>
+                            <span class="log-content">系統 Ver 1.0.3 上線，優化圖像濾波。</span>
+                        </div>
+                        <div class="log-item">
+                            <span class="log-date">2025.11.25</span>
+                            <span class="log-category">[ CHI I KAWA ]</span>
+                            <span class="log-content">吉伊卡哇伏見稻荷系列入庫。</span>
+                        </div>
+                         <div class="log-item">
+                            <span class="log-date">2025.11.20</span>
+                            <span class="log-category">[ S A N R I O ]</span>
+                            <span class="log-content">三麗鷗豹紋玩偶數據已校對。</span>
+                        </div>
+                        <div class="log-item">
+                            <span class="log-date">2025.11.15</span>
+                            <span class="log-category">[ C O D E ]</span>
+                            <span class="log-content">核心函式庫優化完成。</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. 篩選與排序控制項 (產品列表專用) -->
+        <div id="filter-controls" class="hidden flex justify-end gap-6 mb-10 pb-2 border-b border-black">
+            <!-- 主分類篩選器 -->
+            <select id="category-main-filter" class="border-none text-sm cursor-pointer outline-none bg-base-bg">
+                <option value="all">:: ALL CATEGORIES</option>
+                <!-- 選項將由 JS 動態生成 -->
+            </select>
+             <!-- 子分類篩選器 -->
+            <select id="category-sub-filter" class="border-none text-sm cursor-pointer outline-none bg-base-bg" disabled>
+                <option value="all">:: ALL SUB-CATEGORIES</option>
+            </select>
+
+            <select id="sort-by" class="border-none text-sm cursor-pointer outline-none bg-base-bg">
+                <option value="default">SORT :: DEFAULT</option>
+                <option value="price-asc">SORT :: PRICE ASC</option>
+                <option value="price-desc">SORT :: PRICE DESC</option>
+            </select>
+        </div>
+
+        <!-- 2. 數據網格化佈局 (Data Grid) (產品列表專用) -->
+        <div class="product-grid-container hidden" id="product-grid-container">
+            <div id="product-grid" class="product-grid grid">
+                <!-- 產品卡片將被動態插入 -->
+            </div>
+        </div>
+
+        <!-- 產品詳情區塊 (預設隱藏) -->
+        <div id="product-detail-view" class="product-detail-view hidden pt-10">
+            <button id="back-to-grid" class="back-button text-sm mb-10 cursor-pointer p-0 border-none bg-transparent">← 返回產品列表</button>
+            
+            <div class="detail-content flex flex-col lg:flex-row lg:space-x-16">
+                <!-- 圖片區塊 (主圖 & 縮圖) -->
+                <div class="detail-image-container flex-1 mb-8 lg:mb-0">
+                    <!-- 主圖已添加圓角 -->
+                    <img id="detail-main-image" src="" alt="產品圖片" class="w-full h-auto object-cover mb-4 rounded-lg">
+                    <div id="detail-thumbnails" class="flex space-x-2 mt-4 overflow-x-auto pb-2">
+                        <!-- 縮圖將在這裡動態插入 (會在 JS 中添加 rounded-sm) -->
+                    </div>
+                </div>
+                
+                <!-- 資訊區塊 --><div class="detail-info flex-1 pt-0 lg:pt-12">
+                    <h2 id="detail-name" class="text-4xl font-normal mb-2 uppercase"></h2>
+                    
+                    <!-- Fix 3: 價格層次 - 原價與售價 -->
+                    <p id="detail-original-price" class="detail-original-price text-xl font-mono line-through mb-1 hidden"></p>
+                    <!-- 價格已加粗 -->
+                    <p class="detail-price text-xl font-extrabold mb-6" id="detail-price-range"></p>
+
+                    <!-- 變體選擇區塊 -->
+                    <div class="variation-selection mb-10">
+                        <h3 class="text-lg font-semibold mb-3">選擇款式 / 變體:</h3>
+                        <div id="variation-options" class="flex flex-wrap gap-3">
+                            <!-- 變體選項將在這裡動態插入 -->
+                        </div>
+                    </div>
+                    
+                    <div class="detail-description leading-relaxed mb-10 text-gray-700">
+                        <p>這是 Samantha 為您精心挑選的療癒小物。每一件產品都充滿溫暖與愛，希望能為您的生活帶來一絲甜美的陪伴和放鬆的氛圍。</p>
+                        <ul class="list-none mt-6 space-y-2" style="color: var(--primary-text); font-size: 0.9rem;">
+                            <li>主題：甜蜜夢境</li>
+                            <li>適用：療癒身心、送禮自用</li>
+                            <li>保養：輕柔手洗，自然風乾</li>
+                        </ul>
+                    </div>
+                    
+                    <!-- 按鈕已應用珊瑚橘/乾燥玫瑰粉 (Accent Color) 並綁定動畫 -->
+                    <button class="w-full py-4 add-to-cart border uppercase text-base transition duration-200">加入購物車</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Tone.js 和 Audio 控制
+        let synth = null;
+        let isAudioOn = false; 
+        let masterGain = null; // Master Gain Node
+        // 隨機音高列表：從 C4 到 G5 的八個音符
+        const randomNotes = ["C4", "D4", "E4", "F4", "G4", "A4", "B4", "C5", "D5", "E5", "F5", "G5"];
+        let allProducts = []; 
+        let categoryData = {}; // 儲存 product_categories.json 數據
+        const featuredCategories = ["吉伊卡哇 (Chiikawa) 系列", "內褲兔/恰姆 (Opanchu/Chamu) 系列", "三麗鷗 (Sanrio) 系列"]; // 選擇 3 個主分類
+
+        // 5. 確保 Audio Context 在首次互動時啟動 (全局處理)
+        function initAudioContext() {
+            if (Tone && Tone.context.state !== 'running') {
+                Tone.start();
+            }
+
+            if (!synth && Tone) {
+                // 初始化 Master Gain node 並設置音量，連接到主輸出 (音量調高至 0.4)
+                masterGain = new Tone.Gain(0.4).toDestination(); 
+                
+                // 創建一個簡單的方波合成器，用於生成電子音效
+                synth = new Tone.Synth({
+                    oscillator: { type: "square" },
+                    envelope: {
+                        attack: 0.005,
+                        decay: 0.1,
+                        sustain: 0.01,
+                        release: 0.1
+                    }
+                }).connect(masterGain); // 連接到 Gain Node
+            }
+            // 首次啟動後移除監聽器
+            document.body.removeEventListener('click', initAudioContext);
+            document.body.removeEventListener('touchstart', initAudioContext);
+        }
+
+        // 全局監聽首次互動
+        document.body.addEventListener('click', initAudioContext, { once: true });
+        document.body.addEventListener('touchstart', initAudioContext, { once: true });
+
+
+        // 5. 聲音開關邏輯
+        const audioToggleButton = document.getElementById('audio-toggle');
+        if (audioToggleButton) {
+            audioToggleButton.addEventListener('click', toggleAudio);
+        }
+
+        function toggleAudio() {
+            const button = document.getElementById('audio-toggle');
+            
+            // 確保 Audio Context 在點擊按鈕時也被初始化
+            initAudioContext(); 
+            
+            if (isAudioOn) {
+                // Turn OFF
+                button.textContent = '[ AUDIO OFF ]';
+                button.classList.remove('bg-black', 'text-white');
+                isAudioOn = false;
+            } else {
+                // Turn ON
+                button.textContent = '[ AUDIO ON ]';
+                button.classList.add('bg-black', 'text-white');
+                isAudioOn = true;
+                playBleep('G5', '32n'); 
+            }
+        }
+
+        function playBleep(note = "C5", duration = "64n") {
+            if (isAudioOn && synth) {
+                // 如果沒有提供 note (即為自動觸發)，則隨機選擇一個音高
+                if (note === "C5" || note === "D5" || note === "E5" || note === "G5" || note === "A4") {
+                     note = randomNotes[Math.floor(Math.random() * randomNotes.length)];
+                }
+                
+                synth.triggerAttackRelease(note, duration, Tone.now());  
+            }
+        }
+
+        /**
+         * 檢查圖片 URL 是否有效 (模擬資料夾存在)
+         * @param {string} url - 圖片 URL
+         * @returns {Promise<boolean>} - 如果圖片可載入，返回 true
+         */
+        async function checkImageExistence(url) {
+            // --- DEMO MOCK: 模擬外部資源檢查 ---
+            if (url.includes('NO+IMAGE') || url.includes('ERROR')) {
+                 return false;
+            }
+            return true;
+        }
+
+        /**
+         * 圖片 URL 轉換函式 (Image URL Conversion Function)
+         * 構建 /processed_images/{product_id}/processed_{filename}.png 結構
+         * 這是基於原始 URL 檔名的路徑，用於所有圖片載入點。
+         * @param {string} originalUrl - 原始圖片的 URL (從中提取檔名)
+         * @param {string} productId - 產品 ID
+         * @returns {string} 最終可用的圖片 URL (即資料夾內的代表性檔案路徑)
+         */
+        function getProcessedImagePath(originalUrl, productId) {
+             if (!originalUrl) return 'https://placehold.co/600x800/BBBBBB/333333?text=NO+IMAGE';
+
+             // 提取檔名：從原始 URL 的最後一個斜線後提取。
+             const urlParts = originalUrl.split('/');
+             const filename = urlParts[urlParts.length - 1]; 
+
+             // 構建新的本地路徑: /processed_images/{productId}/processed_{filename}.png
+             return `/processed_images/${productId}/processed_${filename}.png`;
+        }
+
+        /**
+         * 渲染導航連結
+         */
+        function renderNavigationLinks(categoryData) {
+            const navLinksContainer = document.getElementById('nav-links');
+            if (!navLinksContainer) return;
+
+            navLinksContainer.innerHTML = ''; // 清空現有連結
+
+            Object.keys(categoryData).forEach(mainCategory => {
+                const link = document.createElement('a');
+                link.href = '#';
+                link.className = 'text-2xl lg:text-sm';
+                link.textContent = mainCategory;
+                
+                link.onclick = (e) => {
+                    e.preventDefault();
+                    playBleep('G4', '64n'); 
+
+                    // 點擊導航連結，直接切換到產品網格，並篩選該分類
+                    showProductGrid(mainCategory);
+
+                    // 在手機上，關閉漢堡選單
+                    const navLinks = document.getElementById('nav-links');
+                    if (navLinks && navLinks.classList.contains('opacity-100')) {
+                        navLinks.classList.add('-translate-x-full', 'opacity-0', 'pointer-events-none');
+                    }
+                };
+
+                navLinksContainer.appendChild(link);
+            });
+        }
+
+        /**
+         * 渲染子分類下拉選單
+         * @param {string} mainCategory - 選中的主分類名稱
+         */
+        function renderSubCategory(mainCategory) {
+            const subFilter = document.getElementById('category-sub-filter');
+            if (!subFilter) return;
+
+            // 微文案調整
+            subFilter.innerHTML = '<option value="all">:: ALL SUB-CATEGORIES</option>';
+            subFilter.disabled = true;
+
+            if (mainCategory === 'all' || !categoryData[mainCategory]) {
+                return;
+            }
+
+            const subCategories = categoryData[mainCategory];
+            if (subCategories && subCategories.length > 0) {
+                subCategories.forEach(sub => {
+                    const option = document.createElement('option');
+                    option.value = sub;
+                    option.textContent = sub;
+                    subFilter.appendChild(option);
+                });
+                subFilter.disabled = false;
+            }
+        }
+
+        /**
+         * 渲染 Landing Page
+         */
+        function renderLandingPage(categoryData) {
+            const landingGrid = document.getElementById('landing-category-grid');
+            if (!landingGrid) return;
+            
+            landingGrid.innerHTML = ''; // 清空內容
+
+            // 選擇精選分類進行展示
+            const categoriesToRender = Object.keys(categoryData).filter(cat => featuredCategories.includes(cat));
+
+            categoriesToRender.forEach((mainCategory, index) => {
+                
+                // 查找該分類的第一個產品，並獲取其主圖片 URL
+                const firstProduct = allProducts.find(p => p.category_main === mainCategory);
+                const coverImage = firstProduct ? firstProduct.primaryImage : 'https://placehold.co/800x600/BBBBBB/333333?text=NO+IMAGE';
+
+                const cardHTML = `
+                    <div class="vertical-category-card" onclick="showProductGrid('${mainCategory}')">
+                        <div class="category-image-container">
+                            <img src="${coverImage}" 
+                                 onerror="this.onerror=null;this.src='https://placehold.co/800x600/BBBBBB/333333?text=NO+IMAGE'"
+                                 alt="${mainCategory} 封面圖片" />
+                        </div>
+                        <div class="category-info">
+                            <h2>${mainCategory}</h2>
+                            <p>:: C O D E &nbsp; S E G M E N T &nbsp; ${index + 1} ::</p>
+                            <p class="mt-2 text-sm" style="color: var(--code-comment);">專門收錄該系列周邊的精確數據檔案。</p>
+                            <a href="#" class="category-view-link" onclick="event.stopPropagation(); showProductGrid('${mainCategory}');">
+                                [ V I E W _ A R C H I V E ]
+                            </a>
+                        </div>
+                    </div>
+                `;
+                landingGrid.innerHTML += cardHTML;
+            });
+
+            showLandingPage();
+        }
+        
+        /**
+         * 隨機資料裝飾生成器 (Random Data Decoration Generator)
+         */
+        function generateDataDecoration(productId) {
+            // 使用產品 ID 的最後四位作為參考，增加一致性
+            const ref = productId.slice(-4); 
+            // 生成隨機座標 (X: 100-999, Y: 10-99)
+            const x = Math.floor(Math.random() * 899) + 100;
+            const y = Math.floor(Math.random() * 89) + 10;
+            return `[ REF: ${ref} // X: ${x} Y: ${y} ]`;
+        }
+
+        // 根據篩選和排序設定處理產品列表
+        function processProducts() {
+            let products = [...allProducts];
+
+            // 獲取當前選中的主分類和子分類
+            const mainCategory = document.getElementById('category-main-filter') ? document.getElementById('category-main-filter').value : 'all';
+            const subCategory = document.getElementById('category-sub-filter') ? document.getElementById('category-sub-filter').value : 'all';
+
+
+            // 主分類篩選
+            if (mainCategory !== 'all') {
+                products = products.filter(p => p.category_main === mainCategory);
+            }
+            
+            // 子分類篩選
+            if (subCategory !== 'all') {
+                products = products.filter(p => p.category_sub === subCategory);
+            }
+
+            // 排序
+            const sortBy = document.getElementById('sort-by');
+            const sortMethod = sortBy ? sortBy.value : 'default';
+            if (sortMethod === 'price-asc') {
+                products.sort((a, b) => a.numericPrice - b.numericPrice);
+            } else if (sortMethod === 'price-desc') {
+                products.sort((a, b) => b.numericPrice - a.numericPrice);
+            }
+
+            renderProducts(products);
+        }
+
+        // 渲染產品網格 (已加入懸停換圖和數據裝飾邏輯)
+        function renderProducts(products) {
+            const container = document.getElementById('product-grid');
+            if (!container) return; // 渲染容器不存在，直接返回
+
+            let htmlContent = '';
+
+            products.forEach(product => {
+                const imageUrl = product.primaryImage;
+                // 懸停圖：如果是第一張圖，且有第二張圖，則使用第二張圖。否則仍使用第一張圖。
+                const secondImage = product.secondImage; 
+                
+                // 2. 數據裝飾
+                const dataDeco = generateDataDecoration(product.product_id);
+
+                // 懸停換圖邏輯：使用 onmouseover/onmouseout
+                const productHTML = `
+                    <div class="product-card text-center cursor-pointer" data-product-id="${product.product_id}">
+                        <a href="#" class="product-link block" 
+                           onclick="event.preventDefault(); showProductDetail('${product.product_id}');"
+                           onmouseover="this.querySelector('img').src = '${secondImage}'"
+                           onmouseout="this.querySelector('img').src = '${imageUrl}'">
+                            <!-- A. 產品網格圖片已添加 rounded-lg 圓角 -->
+                            <img src="${imageUrl}" onerror="this.onerror=null;this.src='https://placehold.co/600x800/BBBBBB/333333?text=404+NOT+FOUND'" alt="${product.product_name}" class="w-full h-auto object-cover mb-4 rounded-lg">
+                        </a>
+                        <div class="product-info">
+                            <!-- 商品名稱字體使用 Inter (Sans-Serif) -->
+                            <h3 class="product-name text-base font-normal mb-1 uppercase">${product.product_name}</h3>
+                            <!-- 商品價格字體使用 Space Mono (Monospace) -->
+                            <p class="product-price text-sm font-bold">${product.displayPrice}</p>
+                            <p class="data-decoration">${dataDeco}</p>
+                        </div>
+                    </div>
+                `;
+                htmlContent += productHTML;
+            });
+
+            container.innerHTML = htmlContent;
+        }
+
+        // 顯示產品詳情頁面 (已加入變體選圖邏輯)
+        function showProductDetail(id) {
+            playBleep('D5', '64n'); // 進入詳情頁的音效
+
+            const product = allProducts.find(p => p.product_id === id);
+
+            if (!product) {
+                console.error('Product not found for ID:', id);
+                return;
+            }
+
+            // --- 集中獲取 DOM 元素 ---
+            const mainImage = document.getElementById('detail-main-image');
+            const detailName = document.getElementById('detail-name');
+            const priceRange = document.getElementById('detail-price-range');
+            const originalPriceElement = document.getElementById('detail-original-price'); // Fix 3
+            const mainTitle = document.getElementById('main-title');
+            const thumbnailsContainer = document.getElementById('detail-thumbnails');
+            const variationOptionsContainer = document.getElementById('variation-options');
+            const gridContainer = document.getElementById('product-grid-container');
+            const filterControls = document.getElementById('filter-controls');
+            const navLinks = document.getElementById('nav-links');
+            const detailView = document.getElementById('product-detail-view');
+            const landingView = document.getElementById('landing-view');
+
+
+            // --- 元素內容更新 ---
+            if (mainImage) { mainImage.src = product.primaryImage; }
+            if (detailName) { detailName.textContent = product.product_name; }
+            if (priceRange) { priceRange.textContent = product.displayPrice; } 
+            
+            // Fix 3: 處理原價顯示
+            if (originalPriceElement) {
+                 if (product.originalPrice) {
+                    originalPriceElement.textContent = `NT$ ${product.originalPrice.toLocaleString()}`;
+                    originalPriceElement.classList.remove('hidden');
+                 } else {
+                    originalPriceElement.classList.add('hidden');
+                 }
+            }
+
+
+            // --- 切換主標題為 Lora/產品名稱風格 ---
+            if (mainTitle) {
+                mainTitle.textContent = product.product_name;
+                mainTitle.style.fontFamily = 'Lora, serif';
+                mainTitle.style.fontSize = '2.2rem';
+                mainTitle.style.letterSpacing = '0.25em';
+                mainTitle.style.color = 'var(--primary-text)';
+                mainTitle.style.textTransform = 'uppercase';
+            }
+            
+            // --- 圖片切換邏輯 ---
+            if (thumbnailsContainer) { thumbnailsContainer.innerHTML = ''; }
+            
+            // 點擊縮圖切換主圖的函式
+            const setMainImage = (imgUrl, thumbnailElement) => {
+                if (mainImage) { mainImage.src = imgUrl; }
+                playBleep('E5', '64n'); // 圖片切換音效
+                // 移除所有縮圖的選中邊框
+                document.querySelectorAll('#detail-thumbnails img').forEach(t => t.classList.remove('border-4', 'border-accent'));
+                if (thumbnailElement) {
+                    thumbnailElement.classList.add('border-4', 'border-accent');
+                }
+            };
+
+            // 渲染所有圖片縮圖
+            product.images.forEach((url, index) => {
+                const imgUrl = getProcessedImagePath(url, product.product_id); // 使用 original URL 'url'
+                const thumbnail = document.createElement('img');
+                thumbnail.src = imgUrl;
+                // 縮圖已添加 rounded-sm 圓角
+                thumbnail.className = `w-16 h-16 object-cover border cursor-pointer transition duration-200 rounded-sm ${index === 0 ? 'border-4 border-accent' : 'border-gray-300'}`;
+                thumbnail.alt = `Thumbnail ${index + 1}`;
+                
+                thumbnail.addEventListener('click', () => setMainImage(imgUrl, thumbnail));
+                
+                if (thumbnailsContainer) { thumbnailsContainer.appendChild(thumbnail); }
+            });
+            
+            // --- 變體選項渲染邏輯 (已加入 Variation Image URL) ---
+            if (variationOptionsContainer) { variationOptionsContainer.innerHTML = ''; }
+            
+            product.variations.forEach(v => {
+                const isOutOfStock = v.stock <= 0;
+                const stockText = isOutOfStock ? '（缺貨）' : `（剩 ${v.stock}）`;
+                
+                // 檢查是否有專屬變體圖片
+                // 假設 Variation Image Placeholder 存在，且該圖片對應第一個處理後的檔案 (1.jpg)
+                const variationImgUrl = v.variation_images && v.variation_images.length > 0 && v.variation_images[0].option_image_url
+                    ? getProcessedImagePath(v.variation_images[0].option_image_url, product.product_id) // 使用原始 URL 構建路徑
+                    : null; 
+                
+                const variationButton = document.createElement('button');
+                
+                // 使用自定義 CSS 處理懸停和選中狀態
+                variationButton.className = `variation-button px-4 py-2 text-sm border border-black transition duration-200 rounded-sm bg-base-bg
+                    ${isOutOfStock 
+                        ? 'bg-gray-200 text-gray-500 cursor-not-allowed line-through' 
+                        : ''}`;
+                
+                variationButton.disabled = isOutOfStock;
+                variationButton.textContent = `${v.variation_name} (NT$ ${v.price.toLocaleString()}) ${stockText}`;
+                
+                // 將變體圖片 URL 存入 data 屬性
+                if (variationImgUrl) {
+                    variationButton.dataset.imageUrl = variationImgUrl;
+                }
+                
+                if (variationOptionsContainer) { variationOptionsContainer.appendChild(variationButton); }
+            });
+
+            // 為變體按鈕添加點擊事件監聽
+            document.querySelectorAll('.variation-button').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    playBleep('G5', '64n'); // 變體選擇音效
+                    const selectedImageUrl = e.currentTarget.dataset.imageUrl;
+                    
+                    // 移除所有按鈕的選中樣式
+                    document.querySelectorAll('.variation-button').forEach(btn => btn.classList.remove('ring-2', 'ring-accent-color'));
+                    // 添加當前按鈕的選中樣式
+                    e.currentTarget.classList.add('ring-2', 'ring-accent-color');
+
+                    if (selectedImageUrl) {
+                        // 如果有變體圖片，則切換主圖
+                        setMainImage(selectedImageUrl, null); // 點擊變體不改變縮圖選中狀態
+                    } else {
+                        // 如果沒有變體圖片，切換回第一個產品圖片 (Primary Image)
+                        setMainImage(product.primaryImage, document.querySelector('#detail-thumbnails img'));
+                    }
+                });
+            });
+
+
+            // --- 隱藏/顯示視圖 (使用 defensive checks) ---
+            if (landingView) { landingView.classList.add('hidden'); }
+            if (gridContainer) { gridContainer.classList.add('hidden'); }
+            if (filterControls) { filterControls.classList.add('hidden'); }
+            if (navLinks) { navLinks.classList.add('-translate-x-full', 'opacity-0', 'pointer-events-none'); }
+            if (detailView) { detailView.classList.remove('hidden'); }
+        }
+
+        // 顯示產品網格
+        function showProductGrid(mainCategory = 'all') {
+            playBleep('A4', '64n'); 
+            // --- 集中獲取 DOM 元素 ---
+            const mainTitle = document.getElementById('main-title');
+            const gridContainer = document.getElementById('product-grid-container');
+            const filterControls = document.getElementById('filter-controls');
+            const detailView = document.getElementById('product-detail-view');
+            const navLinks = document.getElementById('nav-links');
+            const mainFilter = document.getElementById('category-main-filter');
+            const landingView = document.getElementById('landing-view');
+
+            
+            // 處理篩選器狀態
+            if (mainFilter) {
+                mainFilter.value = mainCategory;
+                renderSubCategory(mainCategory);
+            }
+            
+            // 恢復主標題為 Monospace/註解風格
+            if (mainTitle) {
+                mainTitle.removeAttribute('style'); 
+                mainTitle.textContent = "【 // CURATED ARCHIVE 】"; 
+            }
+
+            // 顯示產品網格和控制項
+            if (landingView) { landingView.classList.add('hidden'); }
+            if (gridContainer) { gridContainer.classList.remove('hidden'); }
+            if (filterControls) { filterControls.classList.remove('hidden'); }
+
+            // 隱藏詳情頁面
+            if (detailView) { detailView.classList.add('hidden'); }
+            if (navLinks) { navLinks.classList.add('-translate-x-full', 'opacity-0', 'pointer-events-none'); }
+            
+            // 確保篩選器設置後，執行產品過濾和渲染
+            processProducts(); 
+        }
+
+        // --- DOMContentLoaded 和數據載入 ---
+        document.addEventListener('DOMContentLoaded', () => {
+             // 載入 JSON 文件
+            Promise.all([
+                fetch('all_products_classified.json').then(res => res.ok ? res.json() : []),
+                fetch('product_categories.json').then(res => res.ok ? res.json() : {})
+            ])
+            .then(async ([rawProducts, loadedCategoryData]) => {
+                categoryData = loadedCategoryData;
+                
+                // 1. 異步檢查並過濾產品 (檢查 index 0 的原始 URL 構建的路徑是否可用)
+                const checks = rawProducts.map(async p => {
+                    const originalUrl = p.images && p.images.length > 0 ? p.images[0] : null;
+                    const checkUrl = getProcessedImagePath(originalUrl, p.product_id); // 使用原始 URL 構建路徑
+                    const isAvailable = await checkImageExistence(checkUrl);
+                    
+                    return { product: p, isAvailable: isAvailable };
+                });
+
+                const results = await Promise.all(checks);
+                const filteredProducts = results.filter(r => r.isAvailable).map(r => r.product);
+                
+                // 2. 將過濾後的產品映射到最終的數據結構
+                allProducts = filteredProducts.map(p => {
+                    const prices = p.variations.map(v => v.price);
+                    
+                    // 處理價格
+                    var minPrice = Math.min(...prices) || 0;
+                    var maxPrice = Math.max(...prices) || 0;
+                    var displayPrice = (minPrice === maxPrice) 
+                        ? `NT$ ${minPrice.toLocaleString()}`
+                        : `NT$ ${minPrice.toLocaleString()} - NT$ ${maxPrice.toLocaleString()}`;
+
+                    // 模擬原價 (Fix 3 - Price Hierarchy Demo)
+                    var originalPrice = (p.product_id === '24017871058') ? minPrice + 100 : null; 
+
+                    // 處理圖片 URL (使用確定性路徑，並確保圖片數量有效)
+                    const primaryImage = getProcessedImagePath(p.images[0], p.product_id);
+                    
+                    const secondImage = p.images && p.images.length > 1
+                        ? getProcessedImagePath(p.images[1], p.product_id)
+                        : primaryImage;
+
+
+                    return {
+                        ...p,
+                        // 直接使用 JSON 中的 category_main 和 category_sub 欄位
+                        category_main: p.category_main, 
+                        category_sub: p.category_sub,
+                        numericPrice: minPrice,
+                        displayPrice: displayPrice,
+                        primaryImage: primaryImage,
+                        secondImage: secondImage,
+                        originalPrice: originalPrice // 模擬的原價
+                    };
+                });
+                
+                // 3. 渲染主分類選項並初始化
+                const mainFilter = document.getElementById('category-main-filter');
+                if (mainFilter) {
+                    // 微文案調整
+                    mainFilter.innerHTML = '<option value="all">:: ALL CATEGORIES</option>';
+                    Object.keys(categoryData).forEach(main => {
+                        const option = document.createElement('option');
+                        option.value = main;
+                        option.textContent = main;
+                        mainFilter.appendChild(option);
+                    });
+                    
+                    mainFilter.addEventListener('change', (e) => {
+                        renderSubCategory(e.target.value);
+                        processProducts(); // 重新過濾產品
+                    });
+                    
+                    // 初始綁定子分類的 change 事件
+                    const subFilter = document.getElementById('category-sub-filter');
+                    if (subFilter) {
+                         subFilter.addEventListener('change', processProducts);
+                    }
+                }
+                
+                // 渲染導航連結 (漢堡選單)
+                renderNavigationLinks(categoryData);
+
+                // 渲染 Landing Page
+                renderLandingPage(categoryData);
+
+            })
+            .catch(error => console.error('Error loading data:', error));
+
+            // 註冊頂部導航/漢堡切換和按鈕動畫
+            const menuToggle = document.getElementById('menu-toggle');
+            const navLinks = document.getElementById('nav-links');
+            
+            if (menuToggle && navLinks) {
+                menuToggle.addEventListener('click', () => {
+                    navLinks.classList.toggle('-translate-x-full');
+                    navLinks.classList.toggle('opacity-0');
+                    navLinks.classList.toggle('pointer-events-none');
+                });
+            }
+            
+            const sortBy = document.getElementById('sort-by');
+            if (sortBy) { sortBy.addEventListener('change', processProducts); }
+
+            const backToGrid = document.getElementById('back-to-grid');
+            if (backToGrid) { backToGrid.addEventListener('click', () => showProductGrid('all')); } // 返回鍵回到所有產品
+
+            const addToCart = document.querySelector('.add-to-cart');
+            if (addToCart) {
+                addToCart.onclick = function() {
+                    const cartButton = this;
+                    if (!cartButton.classList.contains('animate-pulse')) {
+                        cartButton.classList.add('animate-pulse');
+                        setTimeout(() => {
+                            cartButton.classList.remove('animate-pulse');
+                            console.log('Product added to cart!');
+                        }, 900);
+                    }
+                };
+            }
+        });
+        // End DOMContentLoaded
+
+    </script>
+</body>
+</html>

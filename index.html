@@ -657,6 +657,7 @@
          * @returns {string} 最終可用的圖片 URL (即資料夾內的代表性檔案路徑)
          */
         function getProcessedImagePath(originalUrl, productId) {
+            return originalUrl;
              if (!originalUrl) return 'https://placehold.co/600x800/BBBBBB/333333?text=NO+IMAGE';
 
              // 提取檔名：從原始 URL 的最後一個斜線後提取。

@@ -19,8 +19,7 @@
             --grid-border: #BBBBBB;     /* 極細灰線 */
             --primary-text: #333333;    /* 深炭灰 */
             --code-comment: #666666;    /* 註解色 */
-            /* 修改 1: 顏色統一，使用警示紅 #FF3333 */
-            --accent: #FF3333;          /* 統一使用警示紅 (原珊瑚橘 #E3735E) */
+            --accent: #FF3333;          /* 統一使用警示紅 */
             --accent-dark: #CC0000;     /* 深紅色 */
             --line-black: #111111;      /* 線條動畫專用黑 */
             --line-red: #FF3333;        /* 警示紅 (Glitch/Target) */
@@ -83,6 +82,12 @@
             transition: opacity 0.5s;
         }
 
+        /* Loading Box 樣式調整：確保它能平滑消失 */
+        #intro-text-box {
+            transition: opacity 0.8s ease-out; /* 平滑淡出 */
+            opacity: 1;
+        }
+
         /* Skip Button */
         #skip-intro {
             position: fixed;
@@ -106,7 +111,7 @@
         .blink-text {
             animation: blinker 0.1s steps(2, start) infinite;
             font-family: 'Space Mono', monospace;
-            color: var(--line-black); /* 開場冷靜，用黑色閃爍 */
+            color: var(--line-black); 
             text-transform: uppercase;
             letter-spacing: 2px;
             background: white;
@@ -124,7 +129,7 @@
             z-index: 10;
         }
 
-        /* --- 3. Styles & Grid (Refined) --- */
+        /* --- 3. Styles & Grid --- */
         .ikeda-grid {
             position: fixed;
             top: 0;
@@ -133,7 +138,6 @@
             height: 100vh;
             pointer-events: none;
             z-index: 0; 
-            /* Visual Polish: 降低透明度至 0.015，如浮水印般 */
             background: linear-gradient(rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.015) 50%), linear-gradient(90deg, rgba(0, 0, 0, 0.015) 1px, transparent 1px);
             background-size: 100% 2px, 20px 20px;
         }
@@ -191,7 +195,7 @@
         .logo { 
             font-family: 'Space Mono', monospace; 
             letter-spacing: 0.35em; 
-            font-weight: 400; 
+            font-weight: 700; /* 修改：加粗靜態 Logo */
             font-size: 1.5rem; 
             color: var(--primary-text); 
             padding: 0 5px; 
@@ -212,13 +216,11 @@
             text-transform: none;
         }
         
-        /* 修改 2: 增加中文字體權重至 700 */
         .product-name, .category-info h2 {
             font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
-            font-weight: 700; /* 加粗 */
+            font-weight: 700;
         }
 
-        /* Typography Polish: 改為 Inter 粗體，增加工業感 */
         #detail-name { 
             font-family: 'Inter', sans-serif; 
             font-weight: 900;
@@ -258,7 +260,6 @@
             position: relative;
         }
         
-        /* UX: Hover Card Effect */
         .product-card:hover {
             border: 1px solid var(--accent);
         }
@@ -413,7 +414,8 @@
 
     <!-- Phase 0: Intro -->
     <div id="intro-overlay">
-        <div class="text-xs tracking-[0.5em] text-black text-center bg-white p-4 border border-black">
+        <!-- 修改: 給文字框加上 ID 以便 JS 控制 -->
+        <div id="intro-text-box" class="text-xs tracking-[0.5em] text-black text-center bg-white p-4 border border-black">
             [ SYSTEM INITIALIZING... ]
             <br><br>
             <span class="blink-text" id="intro-status">_LOADING_DATA_</span>
@@ -499,7 +501,6 @@
                         <div id="detail-thumbnails" class="flex space-x-2 mt-4 overflow-x-auto pb-2"></div>
                     </div>
                     <div class="detail-info flex-1 pt-0 lg:pt-12">
-                        <!-- Typography Polish: 粗體無襯線 -->
                         <h2 id="detail-name" class="mb-2 uppercase text-black"></h2>
                         <p id="detail-original-price" class="detail-original-price text-xl font-mono line-through mb-1 hidden"></p>
                         <p class="detail-price text-xl font-extrabold mb-6" id="detail-price-range"></p>
@@ -529,6 +530,7 @@
         const canvas = document.getElementById('canvas-layer');
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
         const overlay = document.getElementById('intro-overlay');
+        const overlayTextBox = document.getElementById('intro-text-box');
         const siteWrapper = document.getElementById('site-wrapper');
         const skipBtn = document.getElementById('skip-intro');
 
@@ -570,7 +572,8 @@
             let fontSize = Math.floor(Math.min(maxFontSize, safeFontSize));
             fontSize = Math.max(12, fontSize); 
 
-            tCtx.font = `400 ${fontSize}px "Space Mono", monospace`;
+            // 修改：使用 900 (Bold) 字重來增加採樣面積
+            tCtx.font = `900 ${fontSize}px "Space Mono", monospace`;
             tCtx.fillStyle = '#000000'; 
             tCtx.textAlign = 'center';
             tCtx.textBaseline = 'middle';
@@ -586,7 +589,8 @@
             const imageData = tCtx.getImageData(0, 0, width, height);
             const data = imageData.data;
             const pixels = [];
-            const step = 6; 
+            // 修改：降低 step 到 3 以增加解析度
+            const step = 3; 
 
             for (let y = 0; y < height; y += step) {
                 for (let x = 0; x < width; x += step) {
@@ -629,8 +633,10 @@
                 } else if (currentState === STATE.CONVERGE) {
                     this.x += (this.targetX - this.x) * 0.1;
                     this.y += (this.targetY - this.y) * 0.1; 
-                    this.w += (4 - this.w) * 0.1; 
-                    this.h = 4; 
+                    // 修改：目標寬度改為 3 (配合 step)
+                    this.w += (3 - this.w) * 0.1; 
+                    // 修改：目標高度改為 3
+                    this.h = 3; 
 
                     if (Math.abs(this.x - this.targetX) < 10) {
                         this.color = '#111111';
@@ -639,13 +645,13 @@
                 } else if (currentState === STATE.FORMED) {
                     this.x = this.targetX;
                     this.y = this.targetY;
-                    this.w = 4;
+                    // 修改：最終寬度為 3
+                    this.w = 3;
                     
-                    // Visual Polish: Red flash mainly happens here
                     if (Math.random() > 0.995) {
                         this.w = Math.random() * 50 + 10;
                         this.x = this.targetX - this.w / 2; 
-                        this.color = '#FF3333'; // RED FLASH
+                        this.color = '#FF3333'; 
                     } else {
                         this.color = '#111111';
                     }
@@ -669,7 +675,6 @@
             particles = [];
             targetPixels = createTargetPixels();
             
-            // Performance check: Reduce particles on mobile
             const isMobile = width < 768;
             const bgParticleCount = isMobile ? 50 : 200;
 
@@ -721,7 +726,6 @@
 
             if (currentState === STATE.CHAOS) {
                 stateTimer++;
-                // Chaos: Monochrome flickering only
                 if (Math.random() > 0.98) {
                      ctx.fillStyle = 'rgba(17, 17, 17, 0.1)';
                      ctx.fillRect(0, 0, width, height);
@@ -729,8 +733,12 @@
                 
                 if (stateTimer > 120) currentState = STATE.CONVERGE;
             } else if (currentState === STATE.CONVERGE) {
+                // 關鍵修改：進入匯聚狀態時，淡出文字框，讓 Logo 成為主角
+                if (overlayTextBox && overlayTextBox.style.opacity !== '0') {
+                    overlayTextBox.style.opacity = '0';
+                }
+
                 if (totalTargetParticles > 0 && convergedCount / totalTargetParticles > 0.8) {
-                    // Logic: Auto-play sound if already enabled, otherwise wait for interaction
                     if (!animationSoundPlayed && isAudioOn) {
                         playIkedaSnap(); 
                         animationSoundPlayed = true;
@@ -740,7 +748,6 @@
                 }
             } else if (currentState === STATE.FORMED) {
                 stateTimer++;
-                // 修改：延長 Logo 停留時間 (從 120 改為 280，約 4.5 秒)
                 if (stateTimer > 280) {
                     endIntro();
                 }
@@ -753,13 +760,11 @@
 
         function endIntro() {
             if (currentState === STATE.END) return;
-            currentState = STATE.FADEOUT; // Trigger particle fade
+            currentState = STATE.FADEOUT; 
             
-            // UX: Hide overlay and skip button
             overlay.style.opacity = '0';
             skipBtn.style.opacity = '0';
             
-            // Show site
             siteWrapper.style.opacity = '1';
             canvas.style.opacity = '0';
             
@@ -794,7 +799,6 @@
             }
         }
 
-        // UX: Arpeggio for Add to Cart
         function playSuccessArpeggio() {
             if (isAudioOn && synth) {
                 const now = Tone.now();
@@ -883,11 +887,9 @@
 
         // --- Core Initialization ---
         
-        // UX: Auto-start animation logic
         window.addEventListener('load', () => {
-            initAnimation(); // calls resizeAnimation which sets 'width'
+            initAnimation(); 
             
-            // 修改 3: 手機版 (寬度 < 768) 直接跳過 CHAOS 階段，避免卡頓
             if (width < 768) {
                 currentState = STATE.CONVERGE;
             }
@@ -895,18 +897,15 @@
             animateLoop();
         });
 
-        // UX: Skip Button Logic
         skipBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); // Prevent overlay click
+            e.stopPropagation(); 
             endIntro();
         });
 
-        // UX: Overlay Interaction (Audio Enable + Skip)
         overlay.addEventListener('click', async () => {
-            await initAudioContext(); // Try to start audio context
-            toggleAudio(); // Turn audio on visually
+            await initAudioContext(); 
+            toggleAudio(); 
             document.getElementById('intro-status').innerText = "_AUDIO_ENABLED_";
-            // Do not force skip, let user watch, but allow clicking skip btn
         });
 
         document.addEventListener('DOMContentLoaded', () => {

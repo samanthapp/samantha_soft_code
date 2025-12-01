@@ -1049,8 +1049,8 @@
         document.addEventListener('DOMContentLoaded', () => {
              // 載入 JSON 文件
             Promise.all([
-                fetch('all_products_classified (1).json').then(res => res.ok ? res.json() : []),
-                fetch('product_categories (1).json').then(res => res.ok ? res.json() : {})
+                fetch('all_products_classified.json').then(res => res.ok ? res.json() : []),
+                fetch('product_categories.json').then(res => res.ok ? res.json() : {})
             ])
             .then(async ([rawProducts, loadedCategoryData]) => {
                 categoryData = loadedCategoryData;

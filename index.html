@@ -845,7 +845,7 @@
         let masterGain = null;
         let allProducts = []; 
         let categoryData = {}; 
-        const featuredCategories = ["吉伊卡哇 (Chiikawa) 系列", "內褲兔/恰姆 (Opanchu/Chamu) 系列", "三麗鷗 (Sanrio) 系列"]; 
+        const featuredCategories = ["內褲兔 (Opanchu)", "三麗鷗 (Sanrio)"]; 
 
         function playIkedaSnap() {
             if (Tone && Tone.context.state === 'running') {
@@ -966,11 +966,167 @@
             toggleAudio(); 
             document.getElementById('intro-status').innerText = "_AUDIO_ENABLED_";
         });
+        async function fetchData() {
+            try {
+                const response = await fetch('all_products_classified.json');
+                if (!response.ok) throw new Error("JSON Fetch Failed");
+                const jsonData = await response.json();
 
-        document.addEventListener('DOMContentLoaded', () => {
-            const mock = generateMockData();
-            allProducts = mock.products;
-            categoryData = mock.categories;
+                // Transform Data
+                const processed = jsonData.map(item => {
+                    const prices = item.variations.map(v => v.price);
+                    const minPrice = Math.min(...prices);
+                    const maxPrice = Math.max(...prices);
+                    const displayPrice = minPrice === maxPrice
+                        ? `NT$ ${minPrice.toLocaleString()}`
+                        : `NT$ ${minPrice.toLocaleString()} - ${maxPrice.toLocaleString()}`;
+
+                    return {
+                        product_id: item.product_id,
+                        product_name: item.product_name,
+                        category_main: item.brand,
+                        category_sub: item.major_category,
+                        numericPrice: minPrice,
+                        displayPrice: displayPrice,
+                        primaryImage: item.images[0],
+                        secondImage: item.images[1] || item.images[0],
+                        originalPrice: null,
+                        images: item.images,
+                        variations: item.variations.map(v => ({
+                            variation_name: v.variation_name || '單一款式',
+                            price: v.price,
+                            stock: v.stock,
+                            variation_images: v.variation_images
+                        }))
+                    };
+                });
+
+                allProducts = processed.sort((a, b) => b.product_id.localeCompare(a.product_id));
+
+                // Extract Categories dynamically
+                const categories = {};
+                processed.forEach(p => {
+                    if (!categories[p.category_main]) categories[p.category_main] = [];
+                    if (!categories[p.category_main].includes(p.category_sub)) {
+                        categories[p.category_main].push(p.category_sub);
+                    }
+                });
+                // Ensure '玩偶/玩具' is prioritized in subcategories
+                Object.keys(categories).forEach(main => {
+                    categories[main].sort((a, b) => {
+                        if (a === '玩偶/玩具') return -1;
+                        if (b === '玩偶/玩具') return 1;
+                        return a.localeCompare(b);
+                    });
+                });
+                categoryData = categories;
+
+                initApp();
+
+            } catch (err) {
+                console.warn("Using Fallback Data:", err);
+                // Fallback Mock Data if fetch fails (e.g. in preview)
+                const fallbackData = [
+                    {
+                        "product_id": "40176921182",
+                        "product_name": "全新可哀想? 內褲兔Opanchu 手掌大無奈小娃娃玩偶 娃娃機景品（日本帶回現貨）",
+                        "brand": "內褲兔 (Opanchu)",
+                        "major_category": "玩偶/玩具",
+                        "sub_category": "玩偶/公仔",
+                        "product_category": "玩偶/玩具/玩偶/公仔",
+                        "images": [
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztp-mhqbwgblghz5bf",
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztq-mhqbwg9nysjo56",
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztj-mhqbwg9k9cli64",
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81zto-mhqbwgbi7wued1",
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztd-mhqbwgg1quwx96",
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztn-mhqbwgj4wqv78b"
+                        ],
+                        "variations": [
+                            {
+                                "variation_id": "244106722985",
+                                "variation_name": null,
+                                "price": 310.0,
+                                "stock": 1,
+                                "minimum_purchase_quantity": "1",
+                                "variation_images": []
+                            }
+                        ]
+                    },
+                    {
+                        "product_id": "40276199056",
+                        "product_name": "全新 hello kitty 蘋果限定玩偶（日本帶回現貨）",
+                        "brand": "三麗鷗 (Sanrio)",
+                        "major_category": "玩偶/玩具",
+                        "sub_category": "玩偶/公仔",
+                        "product_category": "玩偶/玩具/玩偶/公仔",
+                        "images": [
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztl-mgr7cc6t79ceee",
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81zth-mgr7cc6t8nwua4",
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81zti-mgr7cc6ok3rj12",
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztk-mgr7cc6oobgpc3",
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztk-mgr7cc6ta2ha90"
+                        ],
+                        "variations": [
+                            {
+                                "variation_id": "430085342421",
+                                "variation_name": "手機吊飾",
+                                "price": 780.0,
+                                "stock": 0,
+                                "minimum_purchase_quantity": "1",
+                                "variation_images": [
+                                    {
+                                        "option_name": "手機吊飾",
+                                        "option_image_url": "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztq-mgr7cycg1kwf77"
+                                    }
+                                ]
+                            },
+                            {
+                                "variation_id": "430085342420",
+                                "variation_name": "玩偶吊飾",
+                                "price": 780.0,
+                                "stock": 1,
+                                "minimum_purchase_quantity": null,
+                                "variation_images": [
+                                    {
+                                        "option_name": "玩偶吊飾",
+                                        "option_image_url": "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztj-mgr7cu89skjz40"
+                                    }
+                                ]
+                            }
+                        ]
+                    },
+                ];
+
+                // Transform Fallback
+                allProducts = fallbackData.map(item => {
+                    const prices = item.variations.map(v => v.price);
+                    const minPrice = Math.min(...prices);
+                    const maxPrice = Math.max(...prices);
+                    return {
+                        product_id: item.product_id,
+                        product_name: item.product_name,
+                        category_main: item.brand,
+                        category_sub: item.major_category,
+                        numericPrice: minPrice,
+                        displayPrice: `NT$ ${minPrice}`,
+                        primaryImage: item.images[0],
+                        secondImage: item.images[1] || item.images[0],
+                        images: item.images,
+                        variations: item.variations.map(v => ({
+                            variation_name: v.variation_name || '單一款式',
+                            stock: v.stock
+                        }))
+                    };
+                });
+
+                // Fallback categories
+                categoryData = { "內褲兔 (Opanchu)": ["玩偶/玩具"], "三麗鷗 (Sanrio)": ["玩偶/玩具"] };
+
+                initApp();
+            }
+        }
+        function initApp(){ 
 
             // Setup System Log
             const logContainer = document.getElementById('system-log-container');
@@ -1048,6 +1204,12 @@
                     tooltip.style.opacity = '0';
                 }
             });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchData();
+                // Transform Data
+            
         });
         
         window.addEventListener('resize', () => {
@@ -1100,7 +1262,7 @@
             landingGrid.innerHTML = ''; 
             const categoriesToRender = Object.keys(catData).filter(cat => featuredCategories.includes(cat));
             categoriesToRender.forEach((mainCategory, index) => {
-                const firstProduct = allProducts.find(p => p.category_main === mainCategory);
+                const firstProduct = allProducts.find(p => p.category_main === mainCategory&& p.category_sub === "玩偶/玩具");
                 const coverImage = firstProduct ? firstProduct.primaryImage : 'https://placehold.co/800x600/BBBBBB/333333?text=Category';
                 const cardHTML = `
                     <div class="vertical-category-card" onclick="showProductGrid('${mainCategory}')">

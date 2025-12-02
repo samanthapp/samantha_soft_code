@@ -560,6 +560,7 @@
                         <div id="detail-thumbnails" class="flex space-x-2 mt-4 overflow-x-auto pb-2"></div>
                     </div>
                     <div class="detail-info flex-1 pt-0 lg:pt-12">
+                        <h2 id="product_id" class="mb-2 uppercase text-black"></h2>
                         <h2 id="detail-name" class="mb-2 uppercase text-black"></h2>
                         <p id="detail-original-price" class="detail-original-price text-xl font-mono line-through mb-1 hidden"></p>
                         <p class="detail-price text-xl font-extrabold mb-6" id="detail-price-range"></p>
@@ -985,7 +986,7 @@
                         product_id: item.product_id,
                         product_name: item.product_name,
                         category_main: item.brand,
-                        category_sub: item.major_category,
+                        category_sub: item.major_category, 
                         numericPrice: minPrice,
                         displayPrice: displayPrice,
                         primaryImage: item.images[0],
@@ -1185,6 +1186,9 @@
                         playSuccessArpeggio(); // UX: Arpeggio sound
                         setTimeout(() => cartButton.classList.remove('animate-pulse'), 900);
                     }
+                    const productId = document.getElementById('productid').textContent;
+                    const url = `https://shopee.tw/product/6250814/${productId}`;
+                    window.open(url, '_blank');
                 };
             }
 
@@ -1349,6 +1353,7 @@
             const product = allProducts.find(p => p.product_id === id);
             if (!product) return;
             const mainImage = document.getElementById('detail-main-image');
+            const productid = document.getElementById('product_id');
             const detailName = document.getElementById('detail-name');
             const priceRange = document.getElementById('detail-price-range');
             const originalPriceElement = document.getElementById('detail-original-price'); 
@@ -1356,6 +1361,7 @@
             const thumbnailsContainer = document.getElementById('detail-thumbnails');
             const variationOptionsContainer = document.getElementById('variation-options');
             if (mainImage) mainImage.src = product.primaryImage;
+            if (productid) productid.textContent = product.productid;
             if (detailName) detailName.textContent = product.product_name;
             if (priceRange) priceRange.textContent = product.displayPrice;
             if (originalPriceElement) {

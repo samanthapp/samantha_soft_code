@@ -187,7 +187,7 @@
             );
             background-size: 25px 100%; 
             animation: data-flow 30s cubic-bezier(0.65, 0, 0.35, 1) infinite,
-                       granularity-pulse 8s ease-in-out infinite alternate;
+                        granularity-pulse 8s ease-in-out infinite alternate;
         }
         @keyframes data-flow { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         @keyframes granularity-pulse { 0% { background-size: 25px 100%; } 50% { background-size: 40px 100%; } 100% { background-size: 25px 100%; } }
@@ -196,60 +196,14 @@
         /* Logo 容器 */
         .hacker-logo {
             display: flex;
-            flex-direction: column;
             align-items: center;    /* 置中對齊 */
-            justify-content: center;
+            justify-content: flex-start; /* 靠左 */
             text-decoration: none;
-            line-height: 1.2;
-            gap: 2px; /* 上下行之間的距離 */
             cursor: pointer;
+            height: 100%; /* 確保高度撐滿 header */
         }
         
-        /* 上方主品牌名 SAMANTHA */
-        .brand-name {
-            font-family: 'Inter', sans-serif;
-            font-weight: 900;                 /* 極粗體 */
-            font-size: 2rem;                  /* 大小 */
-            letter-spacing: 0.2em;            /* 字距拉寬 */
-            color: var(--primary-text);       /* 深黑色 */
-            text-transform: uppercase;
-        }
-        
-        /* 下方代碼區塊 [ SOFT_CODE ] */
-        .code-wrapper {
-            position: relative; /* 為了定位紅線 */
-            font-family: 'Space Mono', monospace; /* 等寬字體 */
-            font-size: 0.9rem;
-            color: var(--code-comment); /* 使用灰色，讓層次分明 */
-            letter-spacing: 0.15em;
-            padding-bottom: 5px; /* 留位置給紅線 */
-        }
-        
-        /* 括號的樣式 */
-        .bracket {
-            color: var(--primary-text); /* 括號用深色，強調結構 */
-            font-weight: 700;
-        }
-        
-        /* 紅色動態底線 */
-        .glitch-underline {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            width: 100%;
-            height: 2px; /* 細線 */
-            background-color: var(--line-red); /* 警示紅 */
-            
-            /* 動畫：像呼吸燈一樣忽明忽滅 */
-            animation: breathe-line 4s ease-in-out infinite;
-            box-shadow: 0 0 5px var(--line-red); /* 加一點點螢光暈開的感覺 */
-        }
-        
-        /* 定義呼吸動畫 */
-        @keyframes breathe-line {
-            0%, 100% { opacity: 0.3; transform: scaleX(0.8); }
-            50% { opacity: 1; transform: scaleX(1); }
-        }
+        /* 由於改用 SVG 圖片，原本的文字樣式 CSS 可以移除或保留備用 */
         
         /* 手機版適配 Logo */
         @media (max-width: 640px) {
@@ -484,28 +438,34 @@
 
         <div class="ikeda-grid"></div>
 
-        <header class="border-b border-black py-10 px-4 sm:px-10 sticky top-0 z-50 bg-base-bg/90 backdrop-blur-sm">
-            <nav class="flex justify-between items-center max-w-7xl mx-auto relative">
-                <!-- 更新後的 LOGO 結構 -->
-                <a href="#" class="hacker-logo" onclick="showLandingPage()">
-                    <span class="brand-name">SAMANTHA</span>
-                    <span class="code-wrapper">
-                        <span class="bracket">[</span>
-                        <span class="code-text">SOFT_CODE</span>
-                        <span class="bracket">]</span>
-                        <span class="glitch-underline"></span>
-                    </span>
+        <header class="border-b border-black py-3 px-4 sm:px-10 sticky top-0 z-50 bg-base-bg/90 backdrop-blur-sm">
+            <!-- 修正結構：w-full + justify-between -->
+            <nav class="flex justify-between items-center w-full relative h-16">
+                <!-- LOGO (永遠在左) - 改用 SVG 圖片引用模式 -->
+                <a href="#" class="hacker-logo z-50 flex items-center" onclick="showLandingPage()">
+                    <!-- 
+                        這裡的 src 使用了 Base64 編碼的 SVG 作為預覽。
+                        實際使用時，請將 src 改為您的 SVG 檔案路徑，例如：src="logo.svg"
+                        h-10 (約40px) 確保高度固定，w-auto 確保比例自動鎖定
+                    -->
+                    <img src="logo.svg" 
+                         alt="SAMANTHA LOGO" 
+                         class="w-auto object-contain" />
                 </a>
                 
-                <div class="flex items-center space-x-4">
+                <!-- 導覽連結 (Sidebar 模式) -->
+                <!-- 修正：徹底移除 lg:flex 等桌機設定，讓它永遠是全螢幕 Sidebar 模式 -->
+                <div id="nav-links" class="fixed top-0 left-0 w-full h-screen bg-white p-10 transform -translate-x-full transition-transform duration-300 z-40 flex flex-col items-start space-y-6 opacity-0 pointer-events-none">
+                    <!-- JS Generated -->
+                </div>
+
+                <!-- 右側群組：功能按鈕 (永遠在右) -->
+                <div class="flex items-center space-x-4 z-50">
                     <button id="audio-toggle" class="text-xs font-mono uppercase border border-black px-2 py-1 transition duration-200 hover:bg-black hover:text-white text-black">
                         [ AUDIO OFF ]
                     </button>
-                    <button id="menu-toggle" class="lg:hidden text-2xl z-20 text-black">☰</button>
-                </div>
-
-                <div id="nav-links" class="nav-links lg:flex lg:relative lg:p-0 lg:h-auto lg:w-auto lg:bg-transparent lg:border-none lg:shadow-none lg:translate-x-0 absolute top-0 left-0 w-full h-screen bg-white p-10 transform -translate-x-full flex-col items-start space-y-6 lg:space-y-0 lg:space-x-8 text-sm uppercase z-10 opacity-0 pointer-events-none">
-                    <!-- JS Generated -->
+                    <!-- 漢堡按鈕：移除 lg:hidden，全平台顯示 -->
+                    <button id="menu-toggle" class="text-2xl cursor-pointer text-black">☰</button>
                 </div>
             </nav>
         </header>
@@ -1229,7 +1189,7 @@
             Object.keys(catData).forEach(mainCategory => {
                 const link = document.createElement('a');
                 link.href = '#';
-                link.className = 'text-2xl lg:text-sm hover:text-gray-500 transition-colors text-black';
+                link.className = 'text-2xl lg:text-3xl hover:text-gray-500 transition-colors text-black'; // 調整：在全螢幕選單中讓字體變大，更具衝擊力
                 link.textContent = mainCategory;
                 link.onclick = (e) => {
                     e.preventDefault();

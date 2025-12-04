@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 600 600">
+  <defs>
+    <!-- 引入與網站相同的字體 -->
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@900&amp;family=Space+Mono:wght@400&amp;display=swap');
+      
+      /* 定義呼吸動畫 */
+      @keyframes breathe-line {
+        0%, 100% { opacity: 0.3; transform: scaleX(0.8); }
+        50% { opacity: 1; transform: scaleX(1); }
+      }
+
+      .brand-text {
+        font-family: 'Inter', sans-serif;
+        font-weight: 900;
+        font-size: 48px;
+        letter-spacing: 0.2em;
+        fill: #000000; /* 對應 --primary-text */
+        text-anchor: middle;
+        text-transform: uppercase;
+      }
+
+      .code-text {
+        font-family: 'Space Mono', monospace;
+        font-weight: 600;
+        font-size: 26px;
+        letter-spacing: 0.15em;
+        fill: #555555; /* 對應 --code-comment */
+        text-anchor: middle;
+        padding-bottom: 5px; /* 留位置給紅線 */
+      }
+
+      .bracket {
+        fill: #000000;
+        font-weight: 700;
+      }
+
+      .glitch-line {
+        fill: #FF3333; /* 對應 --line-red */
+        transform-box: fill-box;
+        transform-origin: center;
+        animation: breathe-line 4s ease-in-out infinite;
+      }
+    </style>
+  </defs>
+
+  <!-- 1. 主標題 SAMANTHA (垂直置中於 y=280) -->
+  <text x="35%" y="280" class="brand-text">SAMANTHA</text>
+
+  <!-- 2. 副標題 [ SOFT_CODE ] (垂直置中調整，基準線下移) -->
+  <g transform="translate(0, 320)">
+    <!-- 括號與文字 -->
+    <text x="35%" y="0" class="code-text">
+      <tspan class="bracket">[</tspan> SOFT_CODE <tspan class="bracket">]</tspan>
+    </text>
+    
+    <!-- 3. 紅色呼吸底線 -->
+    <rect x="100" y="8" width="220" height="3" class="glitch-line" />
+  </g>
+</svg>

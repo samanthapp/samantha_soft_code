@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Samantha Soft Code - 4x6 Sticker Sheet (Final Spacing)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@800;900&family=Roboto+Mono:wght@400;500;700&family=Noto+Sans+TC:wght@400&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background-color: #333;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+
+        .font-brand-main { font-family: 'Inter', sans-serif; font-weight: 900; }
+        .font-brand-code { font-family: 'Roboto Mono', monospace; }
+
+        /* 模擬 4x6 英吋紙張 (2:3 比例) */
+        .sheet-4x6 {
+            width: 400px;
+            height: 600px;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        /* 貼紙網格容器：2x2 */
+        .sticker-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 170px); 
+            grid-template-rows: repeat(2, 170px);    
+            gap: 20px; 
+        }
+
+        /* 貼紙樣式 */
+        .sticker-mini {
+            width: 170px;  
+            height: 170px; 
+            background-color: #ffffff;
+            
+            /* Ryoji Ikeda Grid Style - 極致柔和版 */
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.03) 50%), 
+                linear-gradient(90deg, rgba(0, 0, 0, 0.03) 1px, transparent 1px);
+            background-size: 100% 2px, 20px 20px;
+            
+            border: 1px solid #f0f0f0; 
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px; 
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+
+        /* 裁切線 (極淡) */
+        .cut-guide {
+            outline: 1px dashed #e5e7eb;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="mb-8 text-center text-white">
+        <h1 class="text-xl font-bold mb-1 font-brand-code uppercase">
+            // 4x6_SHEET_FINAL_V2
+        </h1>
+        <p class="text-gray-400 text-xs font-brand-code">Adjusted Header Spacing</p>
+    </div>
+
+    <!-- The 4x6 Sheet Container -->
+    <div id="print-sheet" class="sheet-4x6">
+        
+        <div class="sticker-grid">
+            
+            <!-- Sticker 1 -->
+            <div class="sticker-mini cut-guide" style="background-position: 0px 0px;">
+                <div class="w-full flex flex-col items-center pt-1">
+                    <div class="text-center w-full border-b border-dashed border-gray-300 pb-2">
+                        <div class="font-brand-main text-xl tracking-tighter leading-none">SAMANTHA</div>
+                        <!-- 調整間距：從 mt-0.5 改為 mt-2 -->
+                        <div class="font-brand-code text-[7px] tracking-[0.2em] text-gray-500 mt-2">[ SOFT_CODE ]</div>
+                    </div>
+                </div>
+                <div class="w-full font-brand-code text-[8px] text-gray-600 text-center whitespace-nowrap scale-90 origin-center">
+                    <span class="font-bold">ITEM:</span> ACCESS_KEY &nbsp;<span class="font-bold">VER:</span> 1.0.2 
+                </div>
+                <div class="w-full text-center flex flex-col items-center">
+                    <div class="font-brand-code text-[10px] font-bold border-[1.5px] border-black inline-block px-2 py-0.5 transform -rotate-3 mb-2 bg-white/90 backdrop-blur-sm">
+                        THANK YOU
+                    </div>
+                    <div class="bg-white p-0.5 border border-gray-200 shadow-sm mb-1.5">
+                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=000000&bgcolor=ffffff&data=https://samanthapp.github.io/samantha_soft_code/" 
+                              class="w-9 h-9 block" alt="QR Code">
+                    </div>
+                    <div class="font-brand-code text-[6px] text-gray-400 tracking-wider scale-90">
+                        SCAN_ME // SYSTEM_LOG_2026
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticker 2 (Grid Offset: 10px 4px) -->
+            <div class="sticker-mini cut-guide" style="background-position: 10px 4px;">
+                <div class="w-full flex flex-col items-center pt-1">
+                    <div class="text-center w-full border-b border-dashed border-gray-300 pb-2">
+                        <div class="font-brand-main text-xl tracking-tighter leading-none">SAMANTHA</div>
+                        <!-- 調整間距：從 mt-0.5 改為 mt-2 -->
+                        <div class="font-brand-code text-[7px] tracking-[0.2em] text-gray-500 mt-2">[ SOFT_CODE ]</div>
+                    </div>
+                </div>
+                <div class="w-full font-brand-code text-[8px] text-gray-600 text-center whitespace-nowrap scale-90 origin-center">
+                    <span class="font-bold">ITEM:</span> ACCESS_KEY &nbsp;<span class="font-bold">VER:</span> 1.0.2 
+                </div>
+                <div class="w-full text-center flex flex-col items-center">
+                    <div class="font-brand-code text-[10px] font-bold border-[1.5px] border-black inline-block px-2 py-0.5 transform -rotate-3 mb-2 bg-white/90 backdrop-blur-sm">
+                        THANK YOU
+                    </div>
+                    <div class="bg-white p-0.5 border border-gray-200 shadow-sm mb-1.5">
+                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=000000&bgcolor=ffffff&data=https://samanthapp.github.io/samantha_soft_code/" 
+                              class="w-9 h-9 block" alt="QR Code">
+                    </div>
+                    <div class="font-brand-code text-[6px] text-gray-400 tracking-wider scale-90">
+                        SCAN_ME // SYSTEM_LOG_2026
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticker 3 (Grid Offset: 5px 12px) -->
+            <div class="sticker-mini cut-guide" style="background-position: 5px 12px;">
+                <div class="w-full flex flex-col items-center pt-1">
+                    <div class="text-center w-full border-b border-dashed border-gray-300 pb-2">
+                        <div class="font-brand-main text-xl tracking-tighter leading-none">SAMANTHA</div>
+                        <!-- 調整間距：從 mt-0.5 改為 mt-2 -->
+                        <div class="font-brand-code text-[7px] tracking-[0.2em] text-gray-500 mt-2">[ SOFT_CODE ]</div>
+                    </div>
+                </div>
+                <div class="w-full font-brand-code text-[8px] text-gray-600 text-center whitespace-nowrap scale-90 origin-center">
+                    <span class="font-bold">ITEM:</span> ACCESS_KEY &nbsp;<span class="font-bold">VER:</span> 1.0.2 
+                </div>
+                <div class="w-full text-center flex flex-col items-center">
+                    <div class="font-brand-code text-[10px] font-bold border-[1.5px] border-black inline-block px-2 py-0.5 transform -rotate-3 mb-2 bg-white/90 backdrop-blur-sm">
+                        THANK YOU
+                    </div>
+                    <div class="bg-white p-0.5 border border-gray-200 shadow-sm mb-1.5">
+                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=000000&bgcolor=ffffff&data=https://samanthapp.github.io/samantha_soft_code/" 
+                              class="w-9 h-9 block" alt="QR Code">
+                    </div>
+                    <div class="font-brand-code text-[6px] text-gray-400 tracking-wider scale-90">
+                        SCAN_ME // SYSTEM_LOG_2026
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sticker 4 (Grid Offset: 15px 8px) -->
+            <div class="sticker-mini cut-guide" style="background-position: 15px 8px;">
+                <div class="w-full flex flex-col items-center pt-1">
+                    <div class="text-center w-full border-b border-dashed border-gray-300 pb-2">
+                        <div class="font-brand-main text-xl tracking-tighter leading-none">SAMANTHA</div>
+                        <!-- 調整間距：從 mt-0.5 改為 mt-2 -->
+                        <div class="font-brand-code text-[7px] tracking-[0.2em] text-gray-500 mt-2">[ SOFT_CODE ]</div>
+                    </div>
+                </div>
+                <div class="w-full font-brand-code text-[8px] text-gray-600 text-center whitespace-nowrap scale-90 origin-center">
+                    <span class="font-bold">ITEM:</span> ACCESS_KEY &nbsp;<span class="font-bold">VER:</span> 1.0.2 
+                </div>
+                <div class="w-full text-center flex flex-col items-center">
+                    <div class="font-brand-code text-[10px] font-bold border-[1.5px] border-black inline-block px-2 py-0.5 transform -rotate-3 mb-2 bg-white/90 backdrop-blur-sm">
+                        THANK YOU
+                    </div>
+                    <div class="bg-white p-0.5 border border-gray-200 shadow-sm mb-1.5">
+                         <img src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&color=000000&bgcolor=ffffff&data=https://samanthapp.github.io/samantha_soft_code/" 
+                              class="w-9 h-9 block" alt="QR Code">
+                    </div>
+                    <div class="font-brand-code text-[6px] text-gray-400 tracking-wider scale-90">
+                        SCAN_ME // SYSTEM_LOG_2026
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Footer Controls -->
+    <div class="mt-8 flex gap-4">
+        <button onclick="downloadSheet()" class="px-6 py-3 bg-white text-black font-brand-code text-sm font-bold tracking-widest hover:bg-gray-200 transition">
+            [ DOWNLOAD_4x6_SHEET ]
+        </button>
+    </div>
+    <div class="mt-4 text-gray-500 font-brand-code text-[10px] text-center max-w-xs">
+        *Output is high-res PNG. Set printer paper size to 4"x6".<br>
+        *Actual size per sticker: Approx 1.7" x 1.7" (43mm x 43mm).
+    </div>
+
+    <script>
+        function downloadSheet() {
+            const element = document.getElementById('print-sheet');
+            const button = document.querySelector('button');
+            const originalText = button.innerText;
+            
+            button.innerText = 'GENERATING...';
+            
+            // 使用高 scale 確保列印品質 (300dpi 效果)
+            html2canvas(element, {
+                scale: 4, 
+                backgroundColor: '#ffffff',
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Samantha_Stickers_4x6_Final_v2.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                button.innerText = originalText;
+            });
+        }
+    </script>
+</body>
+</html>

@@ -228,6 +228,25 @@
             color: white;
         }
 
+        /* Mobile Filter Horizontal Scroll Optimized */
+        #filter-row-character, #filter-row-type {
+            flex-wrap: nowrap; /* 不換行 */
+            overflow-x: auto; /* 可橫向滑動 */
+            padding-bottom: 5px; /* 留點空間給捲軸 */
+            -webkit-overflow-scrolling: touch; /* iOS 滑動順暢 */
+        }
+        
+        /* 防止按鈕在橫向排列時被壓縮 */
+        #filter-row-character button, #filter-row-type button {
+            flex-shrink: 0;
+        }
+
+        /* 隱藏捲軸但保留功能 */
+        #filter-row-character::-webkit-scrollbar, 
+        #filter-row-type::-webkit-scrollbar { 
+            display: none; 
+        }
+
         @keyframes data-flow {
             0% {
                 transform: translateX(0);
@@ -458,20 +477,116 @@
             display: none !important;
         }
 
-        #nav-links {
-            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
-            background-color: var(--base-bg);
-            border-left: 1px solid var(--grid-border);
+        /* --- Full Screen Navigation Overlay --- */
+        #nav-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(250, 249, 246, 0.95); /* 半透明背景 */
+            backdrop-filter: blur(10px);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease-in-out;
         }
 
-        #nav-links a {
-            white-space: normal;
+        #nav-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        #nav-overlay a {
+            font-family: 'Space Mono', monospace;
+            font-size: 2rem;
             color: var(--primary-text);
+            text-decoration: none;
+            margin: 10px 0;
+            padding: 10px 20px;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            text-transform: uppercase;
         }
 
-        #nav-links a:hover {
+        #nav-overlay a:hover {
+            border: 1px solid var(--accent);
             color: var(--accent);
-            text-decoration: underline;
+            background-color: rgba(255, 255, 255, 0.8);
+            transform: scale(1.05);
+        }
+
+        #close-nav-btn {
+            position: absolute;
+            top: 30px;
+            right: 30px;
+            font-family: 'Space Mono', monospace;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--primary-text);
+            background: none;
+            border: none;
+        }
+
+        /* --- Data Index List View --- */
+        .data-index-container {
+            position: relative;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            border-top: 1px solid var(--grid-border);
+            border-bottom: 1px solid var(--grid-border);
+            margin-bottom: 40px;
+        }
+
+        /* 背景圖片預覽區 (預設隱藏) */
+        #index-preview-bg {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            z-index: 0;
+            filter: grayscale(100%) contrast(120%); /* 保持冷冽感 */
+            pointer-events: none;
+        }
+
+        /* 列表項目 */
+        .index-item {
+            position: relative;
+            z-index: 10;
+            font-family: 'Space Mono', monospace; /* 等寬字體是關鍵 */
+            font-size: 1.5rem; /* 大一點 */
+            padding: 20px 20px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s;
+            background: rgba(255, 255, 255, 0.7); /* 半透明白，讓字在圖上看得見 */
+        }
+        
+        .index-item:last-child {
+            border-bottom: none;
+        }
+
+        /* Hover 特效 */
+        .index-item:hover {
+            background: rgba(255, 255, 255, 0.2); /* 變更透明度 */
+            color: var(--accent); /* 變紅 */
+            padding-left: 40px; /* 向右縮排 */
+        }
+
+        /* 手機版適配 */
+        @media (max-width: 768px) {
+            .index-item { font-size: 1rem; padding: 15px 10px; }
+            .index-item:hover { padding-left: 20px; }
         }
 
         .text-black {
@@ -646,20 +761,17 @@
             <!-- 修正結構：w-full + justify-between -->
             <nav class="flex justify-between items-center w-full relative h-16">
                 <!-- LOGO (永遠在左) - 改用 SVG 圖片引用模式 -->
-                <a href="#" class="hacker-logo z-50 flex items-center" onclick="showLandingPage()">
-                    <!-- 
-                        這裡的 src 使用了 Base64 編碼的 SVG 作為預覽。
-                        實際使用時，請將 src 改為您的 SVG 檔案路徑，例如：src="logo.svg"
-                        h-10 (約40px) 確保高度固定，w-auto 確保比例自動鎖定
-                    -->
+                <a href="#" class="hacker-logo z-50 flex items-center text-black hover:text-[#FF3333] transition-colors" onclick="showLandingPage()">
+                    <!-- Replace content of d="" with your actual logo.svg path data -->
                     <img src="logo.svg" alt="SAMANTHA LOGO" class="w-auto object-contain" />
                 </a>
 
-                <!-- 導覽連結 (Sidebar 模式) -->
-                <!-- 修正：徹底移除 lg:flex 等桌機設定，讓它永遠是全螢幕 Sidebar 模式 -->
-                <div id="nav-links"
-                    class="fixed top-0 left-0 w-full h-screen bg-white p-10 transform -translate-x-full transition-transform duration-300 z-40 flex flex-col items-start space-y-6 opacity-0 pointer-events-none">
-                    <!-- JS Generated -->
+                <!-- Full Screen Navigation Overlay -->
+                <div id="nav-overlay">
+                    <button id="close-nav-btn">[ CLOSE_SYSTEM ]</button>
+                    <div id="nav-links-container" class="flex flex-col items-center">
+                        <!-- JS Generated Links -->
+                    </div>
                 </div>
 
                 <!-- 右側群組：功能按鈕 (永遠在右) -->
@@ -673,8 +785,10 @@
                         class="text-xs font-mono uppercase border border-black px-2 py-1 transition duration-200 hover:bg-black hover:text-white text-black">
                         [ AUDIO OFF ]
                     </button>
-                    <!-- 漢堡按鈕：移除 lg:hidden，全平台顯示 -->
-                    <button id="menu-toggle" class="text-2xl cursor-pointer text-black">☰</button>
+                    <!-- 系統選單按鈕：取代原本的漢堡圖示 -->
+                    <button id="menu-toggle" class="text-xs font-mono font-bold cursor-pointer text-black border border-black px-2 py-1 hover:bg-black hover:text-white transition">
+                        [ SYSTEM_MENU ]
+                    </button>
                 </div>
             </nav>
         </header>
@@ -693,8 +807,12 @@
             <div id="landing-view">
                 <div class="flex flex-col md:flex-row gap-8">
                     <div class="flex-grow">
-                        <h2 class="text-2xl font-mono mb-6 text-black">:: FEATURED COLLECTIONS</h2>
-                        <div id="landing-category-grid"></div>
+                        <h2 class="text-2xl font-mono mb-6 text-black">:: DATA_INDEX_PROTOCOL</h2>
+                        <!-- 數據索引列表容器 -->
+                        <div class="data-index-container" id="data-index">
+                            <img id="index-preview-bg" src="" alt="">
+                            <!-- JS Generated Items -->
+                        </div>
                     </div>
                     <div class="md:w-1/3 mt-8 md:mt-0">
                         <h2 class="text-2xl font-mono mb-6 text-black">:: S Y S T E M _ L O G</h2>
@@ -1074,7 +1192,7 @@
             character: null, // e.g., '酷洛米'
             type: null       // e.g., '娃娃'
         };
-        const featuredCategories = ["內褲兔 (Opanchu)", "三麗鷗 (Sanrio)"];
+        const featuredCategories = ["內褲兔 (Opanchu)", "三麗鷗 (Sanrio)", "塔麻可吉 (Tamagotchi)","崔高興 (Choigosim)"];
 
         function playIkedaSnap() {
             if (Tone && Tone.context.state === 'running') {
@@ -1465,13 +1583,19 @@
             renderNavigationLinks(categoryData);
             renderLandingPage(categoryData);
 
+            // New Menu Logic for Overlay
             const menuToggle = document.getElementById('menu-toggle');
-            const navLinks = document.getElementById('nav-links');
-            if (menuToggle && navLinks) {
+            const navOverlay = document.getElementById('nav-overlay');
+            const closeNavBtn = document.getElementById('close-nav-btn');
+
+            if (menuToggle && navOverlay && closeNavBtn) {
                 menuToggle.addEventListener('click', () => {
-                    navLinks.classList.toggle('-translate-x-full');
-                    navLinks.classList.toggle('opacity-0');
-                    navLinks.classList.toggle('pointer-events-none');
+                    navOverlay.classList.add('active');
+                    playBleep('C6', '32n');
+                });
+                closeNavBtn.addEventListener('click', () => {
+                    navOverlay.classList.remove('active');
+                    playBleep('G5', '32n');
                 });
             }
 
@@ -1536,50 +1660,86 @@
         });
 
         function renderNavigationLinks(catData) {
-            const navLinksContainer = document.getElementById('nav-links');
+            const navLinksContainer = document.getElementById('nav-links-container');
             if (!navLinksContainer) return;
             navLinksContainer.innerHTML = '';
+            
+            // Add Home Link
+            const homeLink = document.createElement('a');
+            homeLink.href = '#';
+            homeLink.textContent = "00 // HOME_BASE";
+            homeLink.onclick = (e) => {
+                e.preventDefault();
+                playBleep('G4', '64n');
+                showLandingPage();
+                document.getElementById('nav-overlay').classList.remove('active');
+            };
+            navLinksContainer.appendChild(homeLink);
+
+            let counter = 1;
             Object.keys(catData).forEach(mainCategory => {
                 const link = document.createElement('a');
                 link.href = '#';
-                link.className = 'text-2xl lg:text-sm hover:text-gray-500 transition-colors text-black';
-                link.textContent = mainCategory;
+                // Add leading zero
+                const num = counter < 10 ? `0${counter}` : counter;
+                link.textContent = `${num} // ${mainCategory.toUpperCase()}`;
                 link.onclick = (e) => {
                     e.preventDefault();
                     playBleep('G4', '64n');
                     showProductGrid(mainCategory);
-                    
-                    const navLinks = document.getElementById('nav-links');
-                    if (navLinks) navLinks.classList.add('-translate-x-full', 'opacity-0', 'pointer-events-none');
+                    document.getElementById('nav-overlay').classList.remove('active');
                 };
                 navLinksContainer.appendChild(link);
+                counter++;
             });
         }
 
         function renderLandingPage(catData) { 
-            const landingGrid = document.getElementById('landing-category-grid');
-            if (!landingGrid) return;
-            landingGrid.innerHTML = ''; 
+            const landingIndexContainer = document.getElementById('data-index');
+            const previewBg = document.getElementById('index-preview-bg');
+            if (!landingIndexContainer) return;
+            
+            // 清除除了 previewBg 以外的內容
+            // 先保留 previewBg 元素
+            const bgElement = landingIndexContainer.querySelector('#index-preview-bg');
+            landingIndexContainer.innerHTML = '';
+            if(bgElement) landingIndexContainer.appendChild(bgElement);
+
             const categoriesToRender = Object.keys(catData).filter(cat => featuredCategories.includes(cat)); 
+            
             categoriesToRender.forEach((mainCategory, index) => {
                 const firstProduct = allProducts.find(p => p.category_main === mainCategory && p.category_sub === "玩偶/玩具");
                 const coverImage = firstProduct ? firstProduct.primaryImage : 'https://placehold.co/800x600/BBBBBB/333333?text=Category';
-                const cardHTML = `
-                    <div class="vertical-category-card" onclick="showProductGrid('${mainCategory}')">
-                        <div class="category-image-container">
-                            <img src="${coverImage}" alt="${mainCategory}" />
-                        </div>
-                        <div class="category-info">
-                            <h2>${mainCategory}</h2>
-                            <p>:: C O D E &nbsp; S E G M E N T &nbsp; ${index + 1} ::</p>
-                            <p class="mt-2 text-sm" style="color: var(--code-comment);">專門收錄該系列周邊的精確數據檔案。</p>
-                            <a href="#" class="category-view-link" onclick="event.stopPropagation(); showProductGrid('${mainCategory}');">
-                                [ V I E W _ A R C H I V E ]
-                            </a>
-                        </div>
-                    </div>
+                
+                // Status Logic (Random for now)
+                const statuses = ["HOT", "NEW", "RESTOCK", "LOW_STOCK"];
+                const status = statuses[index % statuses.length];
+                
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'index-item';
+                itemDiv.dataset.img = coverImage;
+                itemDiv.onclick = () => showProductGrid(mainCategory);
+                
+                itemDiv.innerHTML = `
+                    <span>0${index + 1} . . . . . . ${mainCategory.toUpperCase()}</span>
+                    <span class="text-xs">[ STATUS: ${status} ]</span>
                 `;
-                landingGrid.innerHTML += cardHTML;
+                
+                // Add Hover Events
+                itemDiv.addEventListener('mouseenter', () => {
+                    const imgUrl = itemDiv.dataset.img;
+                    if(previewBg) {
+                        previewBg.src = imgUrl;
+                        previewBg.style.opacity = '0.15'; // 圖片淡淡浮現
+                        playBleep('C2', '64n'); // Low pitch sound
+                    }
+                });
+                
+                itemDiv.addEventListener('mouseleave', () => {
+                    if(previewBg) previewBg.style.opacity = '0';
+                });
+
+                landingIndexContainer.appendChild(itemDiv);
             });
             showLandingPage();
         }
@@ -1701,6 +1861,9 @@
         function showProductGrid(mainCategory = 'all') {
             console.log(mainCategory);
             currentZone=mainCategory;
+            // 每次切換專區時，重置篩選器
+            activeFilters = { character: null, type: null };
+            updateFilterBtnStyles();
             setupFilterBar(currentZone);
             
             playBleep('A4', '64n');

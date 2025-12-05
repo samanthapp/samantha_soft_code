@@ -76,19 +76,16 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* 讓動畫在背後可見，不那麼遮擋 */
             background: rgba(250, 249, 246, 0.4); 
             cursor: pointer;
             transition: opacity 0.5s;
         }
 
-        /* Loading Box 樣式調整：確保它能平滑消失 */
         #intro-text-box {
-            transition: opacity 0.8s ease-out; /* 平滑淡出 */
+            transition: opacity 0.8s ease-out;
             opacity: 1;
         }
 
-        /* Skip Button */
         #skip-intro {
             position: fixed;
             bottom: 30px;
@@ -187,25 +184,61 @@
             );
             background-size: 25px 100%; 
             animation: data-flow 30s cubic-bezier(0.65, 0, 0.35, 1) infinite,
-                        granularity-pulse 8s ease-in-out infinite alternate;
+                       granularity-pulse 8s ease-in-out infinite alternate;
         }
         @keyframes data-flow { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
         @keyframes granularity-pulse { 0% { background-size: 25px 100%; } 50% { background-size: 40px 100%; } 100% { background-size: 25px 100%; } }
 
-        /* --- 新版 LOGO 樣式 (The Breathing Code) --- */
-        /* Logo 容器 */
         .hacker-logo {
             display: flex;
-            align-items: center;    /* 置中對齊 */
-            justify-content: flex-start; /* 靠左 */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             text-decoration: none;
+            line-height: 1.2;
+            gap: 2px;
             cursor: pointer;
-            height: 100%; /* 確保高度撐滿 header */
         }
         
-        /* 由於改用 SVG 圖片，原本的文字樣式 CSS 可以移除或保留備用 */
+        .brand-name {
+            font-family: 'Inter', sans-serif;
+            font-weight: 900;
+            font-size: 0.9rem;
+            letter-spacing: 0.2em;
+            color: var(--primary-text);
+            text-transform: uppercase;
+        }
         
-        /* 手機版適配 Logo */
+        .code-wrapper {
+            position: relative;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--code-comment);
+            letter-spacing: 0.15em;
+            padding-bottom: 5px;
+        }
+        
+        .bracket {
+            color: var(--primary-text);
+            font-weight: 700;
+        }
+        
+        .glitch-underline {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: var(--line-red);
+            animation: breathe-line 4s ease-in-out infinite;
+            box-shadow: 0 0 5px var(--line-red);
+        }
+        
+        @keyframes breathe-line {
+            0%, 100% { opacity: 0.3; transform: scaleX(0.8); }
+            50% { opacity: 1; transform: scaleX(1); }
+        }
+        
         @media (max-width: 640px) {
             .brand-name { font-size: 1.5rem; letter-spacing: 0.15em; }
             .code-wrapper { font-size: 0.75rem; }
@@ -422,7 +455,6 @@
 
     <!-- Phase 0: Intro -->
     <div id="intro-overlay">
-        <!-- 修改: 給文字框加上 ID 以便 JS 控制 -->
         <div id="intro-text-box" class="text-xs tracking-[0.5em] text-black text-center bg-white p-4 border border-black">
             [ SYSTEM INITIALIZING... ]
             <br><br>
@@ -436,8 +468,7 @@
     <!-- Phase 1: Main Site -->
     <div id="site-wrapper">
 
-        <div class="ikeda-grid"></div>
-
+        <div class="ikeda-grid"></div> 
         <header class="border-b border-black py-3 px-4 sm:px-10 sticky top-0 z-50 bg-base-bg/90 backdrop-blur-sm">
             <!-- 修正結構：w-full + justify-between -->
             <nav class="flex justify-between items-center w-full relative h-16">
@@ -461,6 +492,10 @@
 
                 <!-- 右側群組：功能按鈕 (永遠在右) -->
                 <div class="flex items-center space-x-4 z-50">
+                        <!-- 購物車按鈕 -->
+                        <button id="cart-toggle" class="text-xs font-mono uppercase border border-black px-2 py-1 transition duration-200 hover:bg-black hover:text-white text-black flex items-center gap-1">
+                            [ CART : <span id="cart-count">0</span> ]
+                        </button>
                     <button id="audio-toggle" class="text-xs font-mono uppercase border border-black px-2 py-1 transition duration-200 hover:bg-black hover:text-white text-black">
                         [ AUDIO OFF ]
                     </button>
@@ -520,7 +555,9 @@
                         <div id="detail-thumbnails" class="flex space-x-2 mt-4 overflow-x-auto pb-2"></div>
                     </div>
                     <div class="detail-info flex-1 pt-0 lg:pt-12">
-                        <h2 id="product_id" class="mb-2 uppercase text-black"></h2>
+                        <!-- 隱藏的 ID 欄位 -->
+                        <span id="product_id" class="hidden"></span>
+                        
                         <h2 id="detail-name" class="mb-2 uppercase text-black"></h2>
                         <p id="detail-original-price" class="detail-original-price text-xl font-mono line-through mb-1 hidden"></p>
                         <p class="detail-price text-xl font-extrabold mb-6" id="detail-price-range"></p>
@@ -541,9 +578,52 @@
                 </div>
             </div>
         </main>
+        
+        <!-- CART DRAWER / SIDEBAR -->
+        <div id="cart-overlay" class="fixed inset-0 bg-black/50 z-[9998] hidden backdrop-blur-sm transition-opacity"></div>
+        <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white border-l border-black z-[9999] transform translate-x-full transition-transform duration-300 flex flex-col shadow-2xl">
+            <!-- Cart Header -->
+            <div class="p-6 border-b border-black flex justify-between items-center bg-gray-50">
+                <h2 class="font-mono text-lg font-bold tracking-widest">[ CART_LOG ]</h2>
+                <button id="close-cart" class="text-black hover:text-red-600 font-mono text-xl">[X]</button>
+            </div>
+
+            <!-- Cart Items Area -->
+            <div id="cart-items-container" class="flex-1 overflow-y-auto p-6 space-y-6">
+                <!-- JS 會將商品插入這裡 -->
+                <div class="text-center text-gray-400 font-mono text-sm mt-10">
+                    :: NULL_DATA ::<br>購物車是空的
+                </div>
+            </div>
+
+            <!-- Cart Footer / Checkout -->
+            <div class="p-6 border-t border-black bg-gray-50">
+                <div class="flex justify-between font-mono text-sm mb-4">
+                    <span>TOTAL_CALC:</span>
+                    <span id="cart-total" class="font-bold">NT$ 0</span>
+                </div>
+                <!-- 結帳按鈕文字更新 -->
+                <button id="checkout-btn" class="w-full py-3 bg-black text-white font-mono hover:bg-[#FF3333] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed uppercase font-bold text-sm tracking-wider">
+                    [ SEND TO GOOGLE FORM ]
+                </button>
+                <p class="text-[10px] text-gray-500 mt-2 font-mono text-center leading-tight">
+                    * 點擊後跳轉至訂單表單，請確認資料後提交。
+                </p>
+            </div>
+        </div>
     </div>
 
     <script>
+        // ==========================================
+        // CONFIGURATION (請修改這裡)
+        // ==========================================
+        // 1. 你的 Google 表單網址 (請換成你的)
+        const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID_HERE/viewform";
+        
+        // 2. 你的「訂單內容」欄位 ID (請換成你的)
+        // 在 Google 表單「取得預填連結」中找到 &entry.xxxxxxx=...
+        const ORDER_FIELD_ID = "entry.123456789"; 
+
         // ==========================================
         // PART 1: DATAMATICS PARTICLE ENGINE
         // ==========================================
@@ -592,7 +672,6 @@
             let fontSize = Math.floor(Math.min(maxFontSize, safeFontSize));
             fontSize = Math.max(12, fontSize); 
 
-            // 修改：使用 900 (Bold) 字重來增加採樣面積
             tCtx.font = `900 ${fontSize}px "Space Mono", monospace`;
             tCtx.fillStyle = '#000000'; 
             tCtx.textAlign = 'center';
@@ -609,7 +688,6 @@
             const imageData = tCtx.getImageData(0, 0, width, height);
             const data = imageData.data;
             const pixels = [];
-            // 修改：降低 step 到 3 以增加解析度
             const step = 3; 
 
             for (let y = 0; y < height; y += step) {
@@ -626,7 +704,6 @@
             constructor(targetX, targetY) {
                 this.targetX = targetX;
                 this.targetY = targetY;
-                
                 this.x = Math.random() * width; 
                 this.y = Math.random() * height; 
                 this.w = Math.random() * (width * 0.5) + 50; 
@@ -634,7 +711,6 @@
                 this.vx = (Math.random() - 0.5) * 15; 
                 this.vy = 0; 
                 
-                // Visual Polish: Chaos state = No Red, only Grayscale
                 const rand = Math.random();
                 if (rand > 0.7) this.color = '#111111'; 
                 else this.color = 'rgba(17, 17, 17, 0.3)'; 
@@ -645,29 +721,21 @@
                     this.x += this.vx;
                     if (this.x > width + this.w) this.x = -this.w;
                     if (this.x < -this.w) this.x = width + this.w;
-                    
                     if (Math.random() > 0.9) {
                          this.w = Math.random() * (width * 0.8) + 20;
                     }
-                    
                 } else if (currentState === STATE.CONVERGE) {
                     this.x += (this.targetX - this.x) * 0.1;
                     this.y += (this.targetY - this.y) * 0.1; 
-                    // 修改：目標寬度改為 3 (配合 step)
                     this.w += (3 - this.w) * 0.1; 
-                    // 修改：目標高度改為 3
                     this.h = 3; 
-
                     if (Math.abs(this.x - this.targetX) < 10) {
                         this.color = '#111111';
                     }
-                    
                 } else if (currentState === STATE.FORMED) {
                     this.x = this.targetX;
                     this.y = this.targetY;
-                    // 修改：最終寬度為 3
                     this.w = 3;
-                    
                     if (Math.random() > 0.995) {
                         this.w = Math.random() * 50 + 10;
                         this.x = this.targetX - this.w / 2; 
@@ -675,7 +743,6 @@
                     } else {
                         this.color = '#111111';
                     }
-                    
                 } else if (currentState === STATE.FADEOUT) {
                     this.w += Math.random() * 20; 
                     this.h *= 0.9; 
@@ -703,7 +770,6 @@
                      particles.push(new Particle(p.x, p.y));
                 });
             }
-            
             for(let i=0; i < bgParticleCount; i++) {
                 let p = new Particle(width/2, height/2); 
                 p.y = Math.random() * height;
@@ -750,14 +816,11 @@
                      ctx.fillStyle = 'rgba(17, 17, 17, 0.1)';
                      ctx.fillRect(0, 0, width, height);
                 }
-                
                 if (stateTimer > 120) currentState = STATE.CONVERGE;
             } else if (currentState === STATE.CONVERGE) {
-                // 關鍵修改：進入匯聚狀態時，淡出文字框，讓 Logo 成為主角
                 if (overlayTextBox && overlayTextBox.style.opacity !== '0') {
                     overlayTextBox.style.opacity = '0';
                 }
-
                 if (totalTargetParticles > 0 && convergedCount / totalTargetParticles > 0.8) {
                     if (!animationSoundPlayed && isAudioOn) {
                         playIkedaSnap(); 
@@ -781,13 +844,10 @@
         function endIntro() {
             if (currentState === STATE.END) return;
             currentState = STATE.FADEOUT; 
-            
             overlay.style.opacity = '0';
             skipBtn.style.opacity = '0';
-            
             siteWrapper.style.opacity = '1';
             canvas.style.opacity = '0';
-            
             setTimeout(() => {
                 canvas.remove(); 
                 overlay.remove();
@@ -798,7 +858,7 @@
         }
 
         // ==========================================
-        // PART 2: MAIN SITE LOGIC
+        // PART 2: MAIN SITE LOGIC & AUDIO
         // ==========================================
         
         let synth = null;
@@ -869,35 +929,6 @@
             }
         }
 
-        function generateMockData() {
-            const cats = ["吉伊卡哇 (Chiikawa) 系列", "三麗鷗 (Sanrio) 系列", "內褲兔/恰姆 (Opanchu/Chamu) 系列"];
-            const mockProducts = [];
-            
-            for(let i=0; i<9; i++) {
-                const cat = cats[i % 3];
-                mockProducts.push({
-                    product_id: `MOCK-${1000+i}`,
-                    product_name: `${cat.split(' ')[0]} 測試商品 ${i+1}`,
-                    category_main: cat,
-                    category_sub: "玩偶",
-                    numericPrice: 500 + i * 50,
-                    displayPrice: `NT$ ${(500 + i * 50)}`,
-                    primaryImage: `https://down-tw.img.susercontent.com/file/tw-11134207-81ztp-mhqbwgblghz5bf@resize_w450_nl.webp`,
-                    secondImage: `https://down-tw.img.susercontent.com/file/tw-11134207-81ztq-mhqbwg9nysjo56.webp`,
-                    originalPrice: i % 2 === 0 ? 800 : null,
-                    images: [`https://down-tw.img.susercontent.com/file/tw-11134207-81ztp-mhqbwgblghz5bf.webp`],
-                    variations: [
-                        { variation_name: "標準款", price: 500 + i*50, stock: 10 },
-                        { variation_name: "特別款", price: 600 + i*50, stock: 5 }
-                    ]
-                });
-            }
-            
-            const mockCatData = {};
-            cats.forEach(c => mockCatData[c] = ["玩偶", "吊飾", "文具"]);
-            return { products: mockProducts, categories: mockCatData };
-        }
-
         function generateDataDecoration(productId) {
             const ref = productId.slice(-4); 
             const x = Math.floor(Math.random() * 899) + 100;
@@ -905,15 +936,11 @@
             return `[ REF: ${ref} // X: ${x} Y: ${y} ]`;
         }
 
-        // --- Core Initialization ---
-        
         window.addEventListener('load', () => {
             initAnimation(); 
-            
             if (width < 768) {
                 currentState = STATE.CONVERGE;
             }
-            
             animateLoop();
         });
 
@@ -927,13 +954,12 @@
             toggleAudio(); 
             document.getElementById('intro-status').innerText = "_AUDIO_ENABLED_";
         });
+
         async function fetchData() {
             try {
                 const response = await fetch('all_products_classified.json');
                 if (!response.ok) throw new Error("JSON Fetch Failed");
                 const jsonData = await response.json();
-
-                // Transform Data
                 const processed = jsonData.map(item => {
                     const prices = item.variations.map(v => v.price);
                     const minPrice = Math.min(...prices);
@@ -961,10 +987,7 @@
                         }))
                     };
                 });
-
                 allProducts = processed.sort((a, b) => b.product_id.localeCompare(a.product_id));
-
-                // Extract Categories dynamically
                 const categories = {};
                 processed.forEach(p => {
                     if (!categories[p.category_main]) categories[p.category_main] = [];
@@ -972,7 +995,6 @@
                         categories[p.category_main].push(p.category_sub);
                     }
                 });
-                // Ensure '玩偶/玩具' is prioritized in subcategories
                 Object.keys(categories).forEach(main => {
                     categories[main].sort((a, b) => {
                         if (a === '玩偶/玩具') return -1;
@@ -981,89 +1003,41 @@
                     });
                 });
                 categoryData = categories;
-
                 initApp();
-
             } catch (err) {
                 console.warn("Using Fallback Data:", err);
-                // Fallback Mock Data if fetch fails (e.g. in preview)
                 const fallbackData = [
                     {
                         "product_id": "40176921182",
-                        "product_name": "全新可哀想? 內褲兔Opanchu 手掌大無奈小娃娃玩偶 娃娃機景品（日本帶回現貨）",
+                        "product_name": "全新可哀想? 內褲兔Opanchu 手掌大無奈小娃娃玩偶",
                         "brand": "內褲兔 (Opanchu)",
                         "major_category": "玩偶/玩具",
-                        "sub_category": "玩偶/公仔",
-                        "product_category": "玩偶/玩具/玩偶/公仔",
                         "images": [
                             "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztp-mhqbwgblghz5bf",
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztq-mhqbwg9nysjo56",
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztj-mhqbwg9k9cli64",
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81zto-mhqbwgbi7wued1",
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztd-mhqbwgg1quwx96",
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztn-mhqbwgj4wqv78b"
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztq-mhqbwg9nysjo56"
                         ],
                         "variations": [
-                            {
-                                "variation_id": "244106722985",
-                                "variation_name": null,
-                                "price": 310.0,
-                                "stock": 1,
-                                "minimum_purchase_quantity": "1",
-                                "variation_images": []
-                            }
+                            { "variation_name": "標準款", "price": 310.0, "stock": 1 }
                         ]
                     },
                     {
                         "product_id": "40276199056",
-                        "product_name": "全新 hello kitty 蘋果限定玩偶（日本帶回現貨）",
+                        "product_name": "全新 hello kitty 蘋果限定玩偶",
                         "brand": "三麗鷗 (Sanrio)",
                         "major_category": "玩偶/玩具",
-                        "sub_category": "玩偶/公仔",
-                        "product_category": "玩偶/玩具/玩偶/公仔",
                         "images": [
                             "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztl-mgr7cc6t79ceee",
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81zth-mgr7cc6t8nwua4",
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81zti-mgr7cc6ok3rj12",
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztk-mgr7cc6oobgpc3",
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztk-mgr7cc6ta2ha90"
+                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81zth-mgr7cc6t8nwua4"
                         ],
                         "variations": [
-                            {
-                                "variation_id": "430085342421",
-                                "variation_name": "手機吊飾",
-                                "price": 780.0,
-                                "stock": 0,
-                                "minimum_purchase_quantity": "1",
-                                "variation_images": [
-                                    {
-                                        "option_name": "手機吊飾",
-                                        "option_image_url": "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztq-mgr7cycg1kwf77"
-                                    }
-                                ]
-                            },
-                            {
-                                "variation_id": "430085342420",
-                                "variation_name": "玩偶吊飾",
-                                "price": 780.0,
-                                "stock": 1,
-                                "minimum_purchase_quantity": null,
-                                "variation_images": [
-                                    {
-                                        "option_name": "玩偶吊飾",
-                                        "option_image_url": "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztj-mgr7cu89skjz40"
-                                    }
-                                ]
-                            }
+                            { "variation_name": "手機吊飾", "price": 780.0, "stock": 1 },
+                            { "variation_name": "玩偶吊飾", "price": 780.0, "stock": 1 }
                         ]
                     },
                 ];
-
-                // Transform Fallback
                 allProducts = fallbackData.map(item => {
                     const prices = item.variations.map(v => v.price);
                     const minPrice = Math.min(...prices);
-                    const maxPrice = Math.max(...prices);
                     return {
                         product_id: item.product_id,
                         product_name: item.product_name,
@@ -1076,27 +1050,204 @@
                         images: item.images,
                         variations: item.variations.map(v => ({
                             variation_name: v.variation_name || '單一款式',
+                            price: v.price,
                             stock: v.stock
                         }))
                     };
                 });
-
-                // Fallback categories
                 categoryData = { "內褲兔 (Opanchu)": ["玩偶/玩具"], "三麗鷗 (Sanrio)": ["玩偶/玩具"] };
-
                 initApp();
             }
         }
-        function initApp(){ 
 
-            // Setup System Log
+        // ==========================================
+        // PART 3: CART SYSTEM & CHECKOUT (GOOGLE FORM)
+        // ==========================================
+        
+        let cart = []; 
+
+        function initCart() {
+            const cartToggle = document.getElementById('cart-toggle');
+            const closeCart = document.getElementById('close-cart');
+            const cartOverlay = document.getElementById('cart-overlay');
+            const checkoutBtn = document.getElementById('checkout-btn');
+
+            if (cartToggle) cartToggle.addEventListener('click', toggleCart);
+            if (closeCart) closeCart.addEventListener('click', toggleCart);
+            if (cartOverlay) cartOverlay.addEventListener('click', toggleCart);
+            if (checkoutBtn) checkoutBtn.addEventListener('click', processCheckout);
+        }
+
+        function toggleCart() {
+            const sidebar = document.getElementById('cart-sidebar');
+            const overlay = document.getElementById('cart-overlay');
+            const isClosed = sidebar.classList.contains('translate-x-full');
+            
+            if (isClosed) {
+                sidebar.classList.remove('translate-x-full');
+                overlay.classList.remove('hidden');
+                playBleep('C6', '32n');
+            } else {
+                sidebar.classList.add('translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        function addToCartHandler(productId, variationName, price) {
+            const product = allProducts.find(p => p.product_id === productId);
+            if (!product) return;
+
+            // 修正：根據選擇的款式名稱，尋找對應的圖片
+            let displayImage = product.primaryImage; // 預設為主圖
+
+            if (variationName && variationName !== '單一款式') {
+                const selectedVariation = product.variations.find(v => v.variation_name === variationName);
+                // 檢查該變體是否有圖片
+                if (selectedVariation && selectedVariation.variation_images && selectedVariation.variation_images.length > 0) {
+                    const varImgData = selectedVariation.variation_images[0];
+                    // 處理字串或物件格式的圖片資料
+                    if (typeof varImgData === 'string') {
+                        displayImage = varImgData;
+                    } else if (varImgData && varImgData.option_image_url) {
+                        displayImage = varImgData.option_image_url;
+                    }
+                }
+            }
+
+            const cartItem = {
+                id: productId + '-' + variationName,
+                productId: productId,
+                name: product.product_name,
+                image: displayImage, // 使用判斷後的圖片
+                variation: variationName || '單一款式',
+                price: price,
+                qty: 1
+            };
+
+            const existingItem = cart.find(item => item.id === cartItem.id);
+            if (existingItem) {
+                existingItem.qty++;
+            } else {
+                cart.push(cartItem);
+            }
+
+            updateCartUI();
+            toggleCart();
+            playSuccessArpeggio();
+        }
+
+        function updateCartUI() {
+            const container = document.getElementById('cart-items-container');
+            const countSpan = document.getElementById('cart-count');
+            const totalSpan = document.getElementById('cart-total');
+            const checkoutBtn = document.getElementById('checkout-btn');
+
+            let totalQty = 0;
+            let totalPrice = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = `
+                    <div class="text-center text-gray-400 font-mono text-sm mt-10">
+                        :: NULL_DATA ::<br>購物車是空的
+                    </div>
+                `;
+                checkoutBtn.disabled = true;
+            } else {
+                container.innerHTML = '';
+                checkoutBtn.disabled = false;
+                
+                cart.forEach((item) => {
+                    totalQty += item.qty;
+                    totalPrice += item.price * item.qty;
+
+                    const itemHTML = `
+                        <div class="flex gap-4 items-start font-mono border-b border-dashed border-gray-300 pb-4 last:border-0">
+                            <img src="${item.image}" class="w-16 h-16 object-cover border border-gray-300">
+                            <div class="flex-1">
+                                <div class="text-xs text-gray-500 mb-1 leading-none tracking-tighter">${item.productId}</div>
+                                <h4 class="text-sm font-bold text-black leading-tight mb-1 line-clamp-2">${item.name}</h4>
+                                <div class="text-xs text-red-600 mb-2 font-bold">[ ${item.variation} ]</div>
+                                <div class="flex justify-between items-center">
+                                    <span class="font-bold">NT$ ${item.price}</span>
+                                    <div class="flex items-center border border-black">
+                                        <button class="px-2 hover:bg-black hover:text-white transition" onclick="changeQty('${item.id}', -1)">-</button>
+                                        <span class="px-2 text-sm min-w-[20px] text-center">${item.qty}</span>
+                                        <button class="px-2 hover:bg-black hover:text-white transition" onclick="changeQty('${item.id}', 1)">+</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+                    container.innerHTML += itemHTML;
+                });
+            }
+
+            countSpan.textContent = totalQty;
+            totalSpan.textContent = `NT$ ${totalPrice.toLocaleString()}`;
+        }
+
+        window.changeQty = function(itemId, delta) {
+            const item = cart.find(i => i.id === itemId);
+            if (!item) return;
+
+            item.qty += delta;
+            if (item.qty <= 0) {
+                cart = cart.filter(i => i.id !== itemId);
+            }
+            updateCartUI();
+            playBleep('A4', '64n');
+        }
+
+        // --- NEW CHECKOUT LOGIC FOR GOOGLE FORM ---
+        function processCheckout() {
+            if (cart.length === 0) return;
+
+            // 1. Generate Order Text
+            let orderText = `【 SAMANTHA | 訂單請求 】\n`;
+            orderText += `--------------------------------\n`;
+            cart.forEach(item => {
+                orderText += `■ ${item.name}\n`;
+                orderText += `  規格: ${item.variation} x ${item.qty}\n`;
+                orderText += `  小計: $${item.price * item.qty}\n`;
+                orderText += `--------------------------------\n`;
+            });
+            const totalPrice = document.getElementById('cart-total').textContent;
+            orderText += `\n💰 總金額: ${totalPrice}\n`;
+            orderText += `🕒 時間: ${new Date().toLocaleString()}`;
+
+            // 2. Encode for URL
+            const encodedOrderText = encodeURIComponent(orderText);
+
+            // 3. Construct URL
+            // Check if user has updated the placeholder
+            if (GOOGLE_FORM_URL.includes("YOUR_FORM_ID")) {
+                alert("系統錯誤：尚未設定 Google 表單連結。\n請修改程式碼中的 GOOGLE_FORM_URL。");
+                return;
+            }
+
+            const finalUrl = `${GOOGLE_FORM_URL}?usp=pp_url&${ORDER_FIELD_ID}=${encodedOrderText}`;
+
+            // 4. Redirect
+            const conf = confirm("即將跳轉至訂單確認表單。\n\n系統已自動填寫購物車內容，請補充您的聯絡資訊以利我們寄送賣場連結。");
+            if(conf) {
+                window.open(finalUrl, '_blank');
+                cart = [];
+                updateCartUI();
+                toggleCart();
+            }
+        }
+
+        // ==========================================
+        // PART 4: APP LOGIC
+        // ==========================================
+        
+        function initApp(){ 
             const logContainer = document.getElementById('system-log-container');
             if (logContainer) {
                 logContainer.innerHTML = `
                     <div class="log-item"><span class="log-date">2025.11.30</span><span class="log-category">[ N E W ]</span><span class="log-content">內褲兔車長吊飾數據載入完成。</span></div>
                     <div class="log-item"><span class="log-date">2025.11.28</span><span class="log-category">[ UPDATE ]</span><span class="log-content">系統 Ver 1.0.3 上線，優化圖像濾波。</span></div>
                     <div class="log-item"><span class="log-date">2025.11.25</span><span class="log-category">[ CHI I KAWA ]</span><span class="log-content">吉伊卡哇伏見稻荷系列入庫。</span></div>
-                    <div class="log-item"><span class="log-date">2025.11.20</span><span class="log-category">[ S A N R I O ]</span><span class="log-content">三麗鷗豹紋玩偶數據已校對。</span></div>
                 `;
             }
 
@@ -1137,29 +1288,43 @@
             const backToGrid = document.getElementById('back-to-grid');
             if (backToGrid) backToGrid.addEventListener('click', () => showProductGrid('all'));
 
-            const addToCart = document.querySelector('.add-to-cart');
-            if (addToCart) {
-                addToCart.onclick = function() {
-                    const cartButton = this;
-                    if (!cartButton.classList.contains('animate-pulse')) {
-                        cartButton.classList.add('animate-pulse');
-                        playSuccessArpeggio(); // UX: Arpeggio sound
-                        setTimeout(() => cartButton.classList.remove('animate-pulse'), 900);
+            const addToCartBtn = document.querySelector('.add-to-cart');
+            if (addToCartBtn) {
+                addToCartBtn.onclick = function() {
+                    const btn = this;
+                    const currentId = document.getElementById('product_id') ? document.getElementById('product_id').textContent : null;
+                    if(!currentId) return;
+                    const selectedVarBtn = document.querySelector('.variation-button.ring-accent-color');
+                    let selectedVarName = "預設";
+                    let selectedPrice = 0;
+                    const product = allProducts.find(p => p.product_id === currentId);
+                    if (!product) return;
+                    if (selectedVarBtn) {
+                        const btnText = selectedVarBtn.textContent;
+                        selectedVarName = btnText.split(' (NT$')[0];
+                        const variant = product.variations.find(v => v.variation_name === selectedVarName);
+                        selectedPrice = variant ? variant.price : product.numericPrice;
+                    } else {
+                        if(product.variations.length > 0 && product.variations[0].variation_name !== '單一款式') {
+                             alert("請先選擇款式 // SELECT_VARIATION");
+                             return; 
+                        }
+                        selectedVarName = "單一款式";
+                        selectedPrice = product.numericPrice;
                     }
-                    const productId = document.getElementById('productid').textContent;
-                    const url = `https://shopee.tw/product/6250814/${productId}`;
-                    window.open(url, '_blank');
+                    if (!btn.classList.contains('animate-pulse')) {
+                        btn.classList.add('animate-pulse');
+                        setTimeout(() => btn.classList.remove('animate-pulse'), 900);
+                    }
+                    addToCartHandler(currentId, selectedVarName, selectedPrice);
                 };
             }
 
-            // UX: Target Acquired Tooltip Logic
             const tooltip = document.getElementById('cursor-tooltip');
             document.addEventListener('mousemove', (e) => {
                 tooltip.style.left = e.clientX + 'px';
                 tooltip.style.top = e.clientY + 'px';
             });
-
-            // Delegate mouseover for dynamic product cards
             document.body.addEventListener('mouseover', (e) => {
                 const card = e.target.closest('.product-card');
                 if (card) {
@@ -1168,12 +1333,11 @@
                     tooltip.style.opacity = '0';
                 }
             });
+            initCart();
         }
 
         document.addEventListener('DOMContentLoaded', () => {
             fetchData();
-                // Transform Data
-            
         });
         
         window.addEventListener('resize', () => {
@@ -1181,7 +1345,6 @@
             if(currentState !== STATE.END) initAnimation();
         });
 
-        // Helper functions
         function renderNavigationLinks(catData) {
             const navLinksContainer = document.getElementById('nav-links');
             if (!navLinksContainer) return;
@@ -1189,7 +1352,7 @@
             Object.keys(catData).forEach(mainCategory => {
                 const link = document.createElement('a');
                 link.href = '#';
-                link.className = 'text-2xl lg:text-3xl hover:text-gray-500 transition-colors text-black'; // 調整：在全螢幕選單中讓字體變大，更具衝擊力
+                link.className = 'text-2xl lg:text-sm hover:text-gray-500 transition-colors text-black';
                 link.textContent = mainCategory;
                 link.onclick = (e) => {
                     e.preventDefault();
@@ -1267,9 +1430,6 @@
             let htmlContent = '';
             products.forEach(product => {
                 const dataDeco = generateDataDecoration(product.product_id);
-                // UX: Mobile Auto-Flip Logic (Simulated with simple ID for potential JS hook)
-                // For simplicity in a single file, we rely on CSS glitch or simple tap to detail
-                // To improve mobile visibility, we ensure the image tag has an ID we can target if we added complex logic
                 const productHTML = `
                     <div class="product-card text-center cursor-pointer" data-product-id="${product.product_id}">
                         <a href="#" class="product-link block" 
@@ -1288,24 +1448,6 @@
                 htmlContent += productHTML;
             });
             container.innerHTML = htmlContent;
-            
-            // UX: Mobile Simple Image Flip Loop
-            if (window.innerWidth < 768) {
-                const cards = document.querySelectorAll('.product-card');
-                cards.forEach(card => {
-                    const img = card.querySelector('img');
-                    const link = card.querySelector('.product-link');
-                    // Simple interval to flip image every 3s
-                    let showingPrimary = true;
-                    // Note: In a real React app use state. Here we attach dirty interval
-                    // Storing data on element to retrieve URLs
-                    const pImg = img.src; // Assuming initial is primary
-                    // We need the second image URL. It was in the HTML string but hard to get back cleanly without data attr
-                    // For this prototype, we will rely on clicking into detail view for mobile user sanity
-                    // OR we can make the tap toggle image before navigating? 
-                    // Let's stick to the "Target Acquired" cursor idea as the main "Cool" factor for now.
-                });
-            }
         }
 
         function showProductDetail(id) {
@@ -1313,15 +1455,16 @@
             const product = allProducts.find(p => p.product_id === id);
             if (!product) return;
             const mainImage = document.getElementById('detail-main-image');
-            const productid = document.getElementById('product_id');
+            const productidSpan = document.getElementById('product_id'); 
             const detailName = document.getElementById('detail-name');
             const priceRange = document.getElementById('detail-price-range');
             const originalPriceElement = document.getElementById('detail-original-price'); 
             const mainTitle = document.getElementById('main-title');
             const thumbnailsContainer = document.getElementById('detail-thumbnails');
             const variationOptionsContainer = document.getElementById('variation-options');
+            
             if (mainImage) mainImage.src = product.primaryImage;
-            if (productid) productid.textContent = product.productid;
+            if (productidSpan) productidSpan.textContent = product.product_id; 
             if (detailName) detailName.textContent = product.product_name;
             if (priceRange) priceRange.textContent = product.displayPrice;
             if (originalPriceElement) {
@@ -1334,7 +1477,7 @@
             }
             if (mainTitle) {
                 mainTitle.textContent = product.product_name;
-                mainTitle.style.fontFamily = "'Inter', sans-serif"; // Visual Polish
+                mainTitle.style.fontFamily = "'Inter', sans-serif"; 
                 mainTitle.style.fontWeight = "900";
                 mainTitle.style.fontSize = '2.2rem';
                 mainTitle.style.color = '#000';
@@ -1356,14 +1499,35 @@
             }
             if (variationOptionsContainer) {
                 variationOptionsContainer.innerHTML = '';
-                product.variations.forEach(v => {
+                product.variations.forEach((v, index) => {
                     const btn = document.createElement('button');
-                    btn.className = `variation-button px-4 py-2 text-sm transition duration-200 rounded-sm bg-black hover:bg-white hover:text-black`;
+                    btn.className = `variation-button px-4 py-2 text-sm transition duration-200 rounded-sm bg-black hover:bg-white hover:text-black ${index === 0 ? 'ring-2 ring-accent-color' : ''}`; // 預設選取第一個
                     btn.textContent = `${v.variation_name} (NT$ ${v.price})`;
                     btn.onclick = (e) => {
                         playBleep('G5', '64n');
+                        // 1. 移除其他按鈕樣式
                         document.querySelectorAll('.variation-button').forEach(b => b.classList.remove('ring-2', 'ring-accent-color'));
                         e.target.classList.add('ring-2', 'ring-accent-color');
+
+                        // 2. 更新價格顯示為該款式價格
+                        if (priceRange) priceRange.textContent = `NT$ ${v.price.toLocaleString()}`;
+
+                        // 3. 更新圖片 (如果有款式圖片的話)
+                        if (v.variation_images && v.variation_images.length > 0) {
+                            let imgUrl = null;
+                            // 判斷圖片資料結構是字串還是物件
+                            if (typeof v.variation_images[0] === 'string') {
+                                imgUrl = v.variation_images[0];
+                            } else if (v.variation_images[0].option_image_url) {
+                                imgUrl = v.variation_images[0].option_image_url;
+                            }
+                            
+                            if (imgUrl && mainImage) {
+                                mainImage.src = imgUrl;
+                                // 移除縮圖選中狀態，因為現在顯示的是變體圖
+                                document.querySelectorAll('#detail-thumbnails img').forEach(t => t.classList.remove('border-2', 'border-red-500'));
+                            }
+                        }
                     };
                     variationOptionsContainer.appendChild(btn);
                 });

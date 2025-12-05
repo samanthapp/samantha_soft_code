@@ -1,30 +1,41 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>S A M A N T H A | S O F T C O D E</title>
     <!-- 引入 Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    
+
     <!-- Google Fonts: Space Mono (關鍵字體) & Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400;1,700&display=swap"
+        rel="stylesheet">
     <!-- 引入 Tone.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.min.js"></script>
-    
+
     <style>
         /* --- 核心變數：Light Theme (Production Ready) --- */
         :root {
-            --base-bg: #FAF9F6;         /* 奶油白/燕麥色 */
-            --grid-border: #BBBBBB;     /* 極細灰線 */
-            --primary-text: #333333;    /* 深炭灰 */
-            --code-comment: #666666;    /* 註解色 */
-            --accent: #FF3333;          /* 統一使用警示紅 */
-            --accent-dark: #CC0000;     /* 深紅色 */
-            --line-black: #111111;      /* 線條動畫專用黑 */
-            --line-red: #FF3333;        /* 警示紅 (Glitch/Target) */
+            --base-bg: #FAF9F6;
+            /* 奶油白/燕麥色 */
+            --grid-border: #BBBBBB;
+            /* 極細灰線 */
+            --primary-text: #333333;
+            /* 深炭灰 */
+            --code-comment: #666666;
+            /* 註解色 */
+            --accent: #FF3333;
+            /* 統一使用警示紅 */
+            --accent-dark: #CC0000;
+            /* 深紅色 */
+            --line-black: #111111;
+            /* 線條動畫專用黑 */
+            --line-red: #FF3333;
+            /* 警示紅 (Glitch/Target) */
         }
-        
+
         /* --- 全站基礎設定 --- */
         body {
             font-family: 'Inter', Arial, sans-serif;
@@ -33,7 +44,8 @@
             overflow-x: hidden;
             margin: 0;
             padding: 0;
-            cursor: crosshair; /* UX: 全站準心游標 */
+            cursor: crosshair;
+            /* UX: 全站準心游標 */
         }
 
         /* 自定義游標跟隨文字 (Tooltip) */
@@ -62,7 +74,7 @@
             height: 100vh;
             z-index: 9998;
             pointer-events: none;
-            mix-blend-mode: multiply; 
+            mix-blend-mode: multiply;
             transition: opacity 1.5s ease-out;
         }
 
@@ -76,7 +88,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: rgba(250, 249, 246, 0.4); 
+            background: rgba(250, 249, 246, 0.4);
             cursor: pointer;
             transition: opacity 0.5s;
         }
@@ -96,10 +108,11 @@
             color: var(--primary-text);
             border: 1px solid var(--primary-text);
             padding: 8px 12px;
-            background: rgba(255,255,255,0.8);
+            background: rgba(255, 255, 255, 0.8);
             cursor: pointer;
             transition: all 0.2s;
         }
+
         #skip-intro:hover {
             background: var(--primary-text);
             color: var(--base-bg);
@@ -108,13 +121,18 @@
         .blink-text {
             animation: blinker 0.1s steps(2, start) infinite;
             font-family: 'Space Mono', monospace;
-            color: var(--line-black); 
+            color: var(--line-black);
             text-transform: uppercase;
             letter-spacing: 2px;
             background: white;
             padding: 5px 10px;
         }
-        @keyframes blinker { to { opacity: 0; } }
+
+        @keyframes blinker {
+            to {
+                opacity: 0;
+            }
+        }
 
         /* --- 2. Main Site Wrapper --- */
         #site-wrapper {
@@ -134,19 +152,20 @@
             width: 100vw;
             height: 100vh;
             pointer-events: none;
-            z-index: 0; 
+            z-index: 0;
             background: linear-gradient(rgba(255, 255, 255, 0) 50%, rgba(0, 0, 0, 0.015) 50%), linear-gradient(90deg, rgba(0, 0, 0, 0.015) 1px, transparent 1px);
             background-size: 100% 2px, 20px 20px;
         }
 
         #data-ticker-container {
             overflow: hidden;
-            background-color: #f5f5f5; 
+            background-color: #f5f5f5;
             border-bottom: 1px solid var(--grid-border);
             padding: 5px 0;
             z-index: 20;
             position: relative;
         }
+
         #data-ticker {
             font-family: 'Space Mono', monospace;
             font-size: 0.75rem;
@@ -156,7 +175,12 @@
             padding-left: 100%;
             animation: ticker-flow 18s linear infinite;
         }
-        @keyframes ticker-flow { to { transform: translateX(-100%); } }
+
+        @keyframes ticker-flow {
+            to {
+                transform: translateX(-100%);
+            }
+        }
 
         .data-barcode-strip {
             width: 100%;
@@ -164,8 +188,9 @@
             background-color: var(--base-bg);
             overflow: hidden;
             position: relative;
-            margin-bottom: 4rem; 
+            margin-bottom: 4rem;
         }
+
         .data-barcode-strip::after {
             content: '';
             position: absolute;
@@ -173,21 +198,59 @@
             left: 0;
             width: 200%;
             height: 100%;
-            background-image: repeating-linear-gradient(
-                90deg,
-                rgba(0,0,0,0.1) 0px, rgba(0,0,0,0.1) 1px,
-                transparent 1px, transparent 4px,
-                rgba(0,0,0,0.1) 4px, rgba(0,0,0,0.1) 6px,
-                transparent 6px, transparent 15px,
-                rgba(0,0,0,0.2) 15px, rgba(0,0,0,0.2) 16px, 
-                transparent 16px, transparent 25px
-            );
-            background-size: 25px 100%; 
+            background-image: repeating-linear-gradient(90deg,
+                    rgba(0, 0, 0, 0.1) 0px, rgba(0, 0, 0, 0.1) 1px,
+                    transparent 1px, transparent 4px,
+                    rgba(0, 0, 0, 0.1) 4px, rgba(0, 0, 0, 0.1) 6px,
+                    transparent 6px, transparent 15px,
+                    rgba(0, 0, 0, 0.2) 15px, rgba(0, 0, 0, 0.2) 16px,
+                    transparent 16px, transparent 25px);
+            background-size: 25px 100%;
             animation: data-flow 30s cubic-bezier(0.65, 0, 0.35, 1) infinite,
-                       granularity-pulse 8s ease-in-out infinite alternate;
+                granularity-pulse 8s ease-in-out infinite alternate;
         }
-        @keyframes data-flow { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        @keyframes granularity-pulse { 0% { background-size: 25px 100%; } 50% { background-size: 40px 100%; } 100% { background-size: 25px 100%; } }
+        /* --- 篩選按鈕樣式 --- */
+        .filter-btn {
+            border: 1px solid #ccc;
+            background: white;
+            transition: all 0.2s;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.75rem; /* text-xs */
+        }
+        .filter-btn:hover {
+            border-color: black;
+            background: black;
+            color: white;
+        }
+        .filter-btn.active {
+            border-color: black;
+            background: black;
+            color: white;
+        }
+
+        @keyframes data-flow {
+            0% {
+                transform: translateX(0);
+            }
+
+            100% {
+                transform: translateX(-50%);
+            }
+        }
+
+        @keyframes granularity-pulse {
+            0% {
+                background-size: 25px 100%;
+            }
+
+            50% {
+                background-size: 40px 100%;
+            }
+
+            100% {
+                background-size: 25px 100%;
+            }
+        }
 
         .hacker-logo {
             display: flex;
@@ -199,7 +262,7 @@
             gap: 2px;
             cursor: pointer;
         }
-        
+
         .brand-name {
             font-family: 'Inter', sans-serif;
             font-weight: 900;
@@ -208,7 +271,7 @@
             color: var(--primary-text);
             text-transform: uppercase;
         }
-        
+
         .code-wrapper {
             position: relative;
             font-family: 'Space Mono', monospace;
@@ -217,12 +280,12 @@
             letter-spacing: 0.15em;
             padding-bottom: 5px;
         }
-        
+
         .bracket {
             color: var(--primary-text);
             font-weight: 700;
         }
-        
+
         .glitch-underline {
             position: absolute;
             bottom: 0;
@@ -233,44 +296,74 @@
             animation: breathe-line 4s ease-in-out infinite;
             box-shadow: 0 0 5px var(--line-red);
         }
-        
+
         @keyframes breathe-line {
-            0%, 100% { opacity: 0.3; transform: scaleX(0.8); }
-            50% { opacity: 1; transform: scaleX(1); }
-        }
-        
-        @media (max-width: 640px) {
-            .brand-name { font-size: 1.5rem; letter-spacing: 0.15em; }
-            .code-wrapper { font-size: 0.75rem; }
+
+            0%,
+            100% {
+                opacity: 0.3;
+                transform: scaleX(0.8);
+            }
+
+            50% {
+                opacity: 1;
+                transform: scaleX(1);
+            }
         }
 
-        .mobile-logo-break { display: none; }
-        @media (max-width: 1023px) { .mobile-logo-break { display: block; content: " "; height: 0; } }
+        @media (max-width: 640px) {
+            .brand-name {
+                font-size: 1.5rem;
+                letter-spacing: 0.15em;
+            }
+
+            .code-wrapper {
+                font-size: 0.75rem;
+            }
+        }
+
+        .mobile-logo-break {
+            display: none;
+        }
+
+        @media (max-width: 1023px) {
+            .mobile-logo-break {
+                display: block;
+                content: " ";
+                height: 0;
+            }
+        }
 
         #main-title {
             font-family: 'Space Mono', monospace;
-            font-weight: 400; 
+            font-weight: 400;
             font-size: 1rem;
             letter-spacing: 0.1em;
             color: var(--code-comment);
-            margin-bottom: 5rem; 
+            margin-bottom: 5rem;
             text-transform: none;
         }
-        
-        .product-name, .category-info h2 {
+
+        .product-name,
+        .category-info h2 {
             font-family: "Noto Sans TC", "Microsoft JhengHei", sans-serif !important;
             font-weight: 700;
         }
 
-        #detail-name { 
-            font-family: 'Inter', sans-serif; 
+        #detail-name {
+            font-family: 'Inter', sans-serif;
             font-weight: 900;
-            font-size: 2.2rem; 
-            letter-spacing: 0.05em; 
-            text-transform: uppercase; 
+            font-size: 2.2rem;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
         }
-        .product-price { font-family: 'Space Mono', monospace; color: var(--primary-text); font-weight: bold; }
-        
+
+        .product-price {
+            font-family: 'Space Mono', monospace;
+            color: var(--primary-text);
+            font-weight: bold;
+        }
+
         .data-decoration {
             font-family: 'Space Mono', monospace;
             font-size: 0.7rem;
@@ -281,30 +374,41 @@
         }
 
         .product-grid-container {
-            background-color: var(--grid-border); 
+            background-color: var(--grid-border);
             padding: 1px;
             margin: 0 auto;
         }
+
         .product-grid {
-            gap: 1px 1px; 
+            gap: 1px 1px;
             background-color: var(--base-bg);
-            grid-template-columns: repeat(1, minmax(0, 1fr)); 
+            grid-template-columns: repeat(1, minmax(0, 1fr));
         }
-        @media (min-width: 640px) { .product-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-        @media (min-width: 1024px) { .product-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
-        
+
+        @media (min-width: 640px) {
+            .product-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (min-width: 1024px) {
+            .product-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
+
         .product-card {
             background-color: var(--base-bg);
             padding: 30px;
             transition: none;
-            border: 1px solid transparent; 
+            border: 1px solid transparent;
             position: relative;
         }
-        
+
         .product-card:hover {
             border: 1px solid var(--accent);
         }
-        
+
         .detail-original-price {
             color: var(--code-comment);
             font-family: 'Space Mono', monospace;
@@ -313,90 +417,140 @@
             margin-bottom: 0;
             display: block;
         }
+
         .detail-price {
             font-family: 'Space Mono', monospace;
             font-weight: 800;
         }
-        
+
         .product-card:hover img {
             animation: glitch-anim 0.2s cubic-bezier(.25, .46, .45, .94) both infinite;
             filter: contrast(1.1) saturate(0.8);
         }
+
         @keyframes glitch-anim {
-            0% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
-            100% { transform: translate(0); }
+            0% {
+                transform: translate(0);
+            }
+
+            20% {
+                transform: translate(-2px, 2px);
+            }
+
+            40% {
+                transform: translate(-2px, -2px);
+            }
+
+            60% {
+                transform: translate(2px, 2px);
+            }
+
+            80% {
+                transform: translate(2px, -2px);
+            }
+
+            100% {
+                transform: translate(0);
+            }
         }
 
-        .hidden { display: none !important; }
-        
-        #nav-links { 
-            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out; 
-            background-color: var(--base-bg); 
+        .hidden {
+            display: none !important;
+        }
+
+        #nav-links {
+            transition: transform 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            background-color: var(--base-bg);
             border-left: 1px solid var(--grid-border);
         }
-        #nav-links a { 
-            white-space: normal; 
+
+        #nav-links a {
+            white-space: normal;
             color: var(--primary-text);
         }
+
         #nav-links a:hover {
             color: var(--accent);
             text-decoration: underline;
         }
 
-        .text-black { color: var(--primary-text) !important; }
-        .border-black { border-color: var(--primary-text) !important; }
-        .bg-light-purple { background-color: var(--base-bg); }
-        
-        .add-to-cart { 
-            background-color: var(--primary-text); 
-            color: white; 
-            border: 1px solid var(--primary-text); 
+        .text-black {
+            color: var(--primary-text) !important;
+        }
+
+        .border-black {
+            border-color: var(--primary-text) !important;
+        }
+
+        .bg-light-purple {
+            background-color: var(--base-bg);
+        }
+
+        .add-to-cart {
+            background-color: var(--primary-text);
+            color: white;
+            border: 1px solid var(--primary-text);
             font-family: 'Space Mono', monospace;
             font-weight: bold;
         }
-        .add-to-cart:hover { 
-            background-color: var(--accent); 
-            border-color: var(--accent); 
+
+        .add-to-cart:hover {
+            background-color: var(--accent);
+            border-color: var(--accent);
             color: white;
         }
-        
-        .border-accent { border-color: var(--accent) !important; }
-        
+
+        .border-accent {
+            border-color: var(--accent) !important;
+        }
+
         .variation-button {
             border: 1px solid var(--grid-border);
             color: var(--primary-text);
             background-color: var(--base-bg);
         }
-        .variation-button:not(:disabled):hover { 
-            background-color: var(--accent); 
-            color: white; 
-            border-color: var(--accent); 
+
+        .variation-button:not(:disabled):hover {
+            background-color: var(--accent);
+            color: white;
+            border-color: var(--accent);
         }
-        .ring-accent-color { 
-            box-shadow: 0 0 0 2px var(--accent); 
-            border-color: var(--accent) !important; 
+
+        .ring-accent-color {
+            box-shadow: 0 0 0 2px var(--accent);
+            border-color: var(--accent) !important;
         }
 
         @keyframes pulse-accent {
-            0% { transform: scale(1); background-color: var(--accent); }
-            50% { transform: scale(1.05); background-color: var(--accent-dark); }
-            100% { transform: scale(1); background-color: var(--accent); }
+            0% {
+                transform: scale(1);
+                background-color: var(--accent);
+            }
+
+            50% {
+                transform: scale(1.05);
+                background-color: var(--accent-dark);
+            }
+
+            100% {
+                transform: scale(1);
+                background-color: var(--accent);
+            }
         }
-        .add-to-cart.animate-pulse { animation: pulse-accent 0.3s ease-in-out 3; }
+
+        .add-to-cart.animate-pulse {
+            animation: pulse-accent 0.3s ease-in-out 3;
+        }
 
         .filter-controls select {
-             font-family: 'Space Mono', monospace;
-             border-radius: 0;
-             border: 1px solid var(--grid-border);
-             color: var(--primary-text);
-             background-color: transparent;
-             padding: 4px 10px;
+            font-family: 'Space Mono', monospace;
+            border-radius: 0;
+            border: 1px solid var(--grid-border);
+            color: var(--primary-text);
+            background-color: transparent;
+            padding: 4px 10px;
         }
-        
+
         .vertical-category-card {
             border: 1px solid var(--grid-border);
             padding: 20px;
@@ -405,10 +559,12 @@
             transition: all 0.2s;
             background: #fff;
         }
+
         .vertical-category-card:hover {
             transform: translateY(-2px);
             border-color: var(--accent);
         }
+
         .category-image-container img {
             width: 100%;
             height: 300px;
@@ -416,14 +572,17 @@
             margin-bottom: 15px;
             filter: grayscale(20%);
         }
+
         .vertical-category-card:hover .category-image-container img {
             filter: grayscale(0%);
         }
+
         .category-info h2 {
             font-size: 1.5rem;
             margin-bottom: 0.5rem;
             color: var(--primary-text);
         }
+
         .category-view-link {
             display: inline-block;
             margin-top: 15px;
@@ -432,19 +591,32 @@
             text-decoration: underline;
             color: var(--accent);
         }
-        
+
         .log-item {
             border-bottom: 1px solid var(--grid-border);
             padding: 15px 0;
             font-family: 'Space Mono', monospace;
             font-size: 0.85rem;
         }
-        .log-date { display: block; color: var(--code-comment); margin-bottom: 4px; }
-        .log-category { color: var(--accent); margin-right: 8px; font-weight: bold; }
-        .log-content { color: var(--primary-text); }
 
+        .log-date {
+            display: block;
+            color: var(--code-comment);
+            margin-bottom: 4px;
+        }
+
+        .log-category {
+            color: var(--accent);
+            margin-right: 8px;
+            font-weight: bold;
+        }
+
+        .log-content {
+            color: var(--primary-text);
+        }
     </style>
 </head>
+
 <body class="min-h-screen">
 
     <!-- UX: Custom Tooltip -->
@@ -455,7 +627,8 @@
 
     <!-- Phase 0: Intro -->
     <div id="intro-overlay">
-        <div id="intro-text-box" class="text-xs tracking-[0.5em] text-black text-center bg-white p-4 border border-black">
+        <div id="intro-text-box"
+            class="text-xs tracking-[0.5em] text-black text-center bg-white p-4 border border-black">
             [ SYSTEM INITIALIZING... ]
             <br><br>
             <span class="blink-text" id="intro-status">_LOADING_DATA_</span>
@@ -468,7 +641,7 @@
     <!-- Phase 1: Main Site -->
     <div id="site-wrapper">
 
-        <div class="ikeda-grid"></div> 
+        <div class="ikeda-grid"></div>
         <header class="border-b border-black py-3 px-4 sm:px-10 sticky top-0 z-50 bg-base-bg/90 backdrop-blur-sm">
             <!-- 修正結構：w-full + justify-between -->
             <nav class="flex justify-between items-center w-full relative h-16">
@@ -479,24 +652,25 @@
                         實際使用時，請將 src 改為您的 SVG 檔案路徑，例如：src="logo.svg"
                         h-10 (約40px) 確保高度固定，w-auto 確保比例自動鎖定
                     -->
-                    <img src="logo.svg" 
-                         alt="SAMANTHA LOGO" 
-                         class="w-auto object-contain" />
+                    <img src="logo.svg" alt="SAMANTHA LOGO" class="w-auto object-contain" />
                 </a>
-                
+
                 <!-- 導覽連結 (Sidebar 模式) -->
                 <!-- 修正：徹底移除 lg:flex 等桌機設定，讓它永遠是全螢幕 Sidebar 模式 -->
-                <div id="nav-links" class="fixed top-0 left-0 w-full h-screen bg-white p-10 transform -translate-x-full transition-transform duration-300 z-40 flex flex-col items-start space-y-6 opacity-0 pointer-events-none">
+                <div id="nav-links"
+                    class="fixed top-0 left-0 w-full h-screen bg-white p-10 transform -translate-x-full transition-transform duration-300 z-40 flex flex-col items-start space-y-6 opacity-0 pointer-events-none">
                     <!-- JS Generated -->
                 </div>
 
                 <!-- 右側群組：功能按鈕 (永遠在右) -->
                 <div class="flex items-center space-x-4 z-50">
-                        <!-- 購物車按鈕 -->
-                        <button id="cart-toggle" class="text-xs font-mono uppercase border border-black px-2 py-1 transition duration-200 hover:bg-black hover:text-white text-black flex items-center gap-1">
-                            [ CART : <span id="cart-count">0</span> ]
-                        </button>
-                    <button id="audio-toggle" class="text-xs font-mono uppercase border border-black px-2 py-1 transition duration-200 hover:bg-black hover:text-white text-black">
+                    <!-- 購物車按鈕 -->
+                    <button id="cart-toggle"
+                        class="text-xs font-mono uppercase border border-black px-2 py-1 transition duration-200 hover:bg-black hover:text-white text-black flex items-center gap-1">
+                        [ CART : <span id="cart-count">0</span> ]
+                    </button>
+                    <button id="audio-toggle"
+                        class="text-xs font-mono uppercase border border-black px-2 py-1 transition duration-200 hover:bg-black hover:text-white text-black">
                         [ AUDIO OFF ]
                     </button>
                     <!-- 漢堡按鈕：移除 lg:hidden，全平台顯示 -->
@@ -506,14 +680,16 @@
         </header>
 
         <div id="data-ticker-container">
-            <span id="data-ticker">S Y S T E M &nbsp; O N L I N E &nbsp; . . . &nbsp; C U R A T E D &nbsp; D A T A &nbsp; R E C O R D &nbsp; I N I T I A T E D &nbsp; . . . &nbsp; V E R &nbsp; 1 . 0 . 1 &nbsp; . . . &nbsp; 0 0 1 0 1 1 0 &nbsp; 1 1 0 1 0 0 1 0 1 0 1 0 &nbsp; 0 0 1 1 1 1 0</span>
+            <span id="data-ticker">S Y S T E M &nbsp; O N L I N E &nbsp; . . . &nbsp; C U R A T E D &nbsp; D A T A
+                &nbsp; R E C O R D &nbsp; I N I T I A T E D &nbsp; . . . &nbsp; V E R &nbsp; 1 . 0 . 1 &nbsp; . . .
+                &nbsp; 0 0 1 0 1 1 0 &nbsp; 1 1 0 1 0 0 1 0 1 0 1 0 &nbsp; 0 0 1 1 1 1 0</span>
         </div>
 
         <div class="data-barcode-strip"></div>
-        
+
         <main class="max-w-7xl mx-auto px-4 sm:px-10 py-12">
             <h1 id="main-title" class="font-normal text-center tracking-widest text-black">【 // CURATED ARCHIVE 】</h1>
-            
+
             <div id="landing-view">
                 <div class="flex flex-col md:flex-row gap-8">
                     <div class="flex-grow">
@@ -529,37 +705,59 @@
                 </div>
             </div>
 
-            <div id="filter-controls" class="hidden flex justify-end gap-6 mb-10 pb-2 border-b border-black">
-                <select id="category-main-filter" class="border-none text-sm cursor-pointer outline-none">
-                    <option value="all">:: ALL CATEGORIES</option>
-                </select>
-                <select id="category-sub-filter" class="border-none text-sm cursor-pointer outline-none" disabled>
-                    <option value="all">:: ALL SUB-CATEGORIES</option>
-                </select>
-                <select id="sort-by" class="border-none text-sm cursor-pointer outline-none">
-                    <option value="default">SORT :: DEFAULT</option>
-                    <option value="price-asc">SORT :: PRICE ASC</option>
-                    <option value="price-desc">SORT :: PRICE DESC</option>
-                </select>
-            </div>
+            <!-- 舊版下拉選單已移除 -->
 
+            <div class="flex flex-col gap-3">
+
+                <!-- 1. 角色篩選 (僅三麗鷗顯示) -->
+                <div id="filter-row-character" class="flex flex-wrap items-center gap-2 hidden">
+                    <span class="font-mono text-[10px] text-gray-400 w-16">CHAR ::</span>
+                    <!-- JS 動態生成按鈕 -->
+                    <div id="char-btn-group" class="flex flex-wrap gap-2"></div>
+                </div>
+
+                <!-- 2. 品項篩選 (通用) -->
+                <div id="filter-row-type" class="flex flex-wrap items-center gap-2">
+                    <span class="font-mono text-[10px] text-gray-400 w-16">TYPE ::</span>
+                    <button onclick="toggleFilter('type', '吊飾')"
+                        class="filter-btn px-3 py-1 text-xs rounded-full">吊飾/鑰匙圈</button>
+                    <button onclick="toggleFilter('type', '娃娃')"
+                        class="filter-btn px-3 py-1 text-xs rounded-full">娃娃/玩偶</button>
+                    <button onclick="toggleFilter('type', '收納')"
+                        class="filter-btn px-3 py-1 text-xs rounded-full">收納/包袋</button>
+                    <button onclick="toggleFilter('type', '文具')"
+                        class="filter-btn px-3 py-1 text-xs rounded-full">文具/貼紙</button>
+                    <button onclick="toggleFilter('type', '生活')"
+                        class="filter-btn px-3 py-1 text-xs rounded-full">生活/雜貨</button>
+                </div>
+            </div>
             <div class="product-grid-container hidden" id="product-grid-container">
                 <div id="product-grid" class="product-grid grid"></div>
             </div>
-
+            <!-- 無結果提示 -->
+            <div id="empty-state" class="hidden py-20 text-center">
+                <p class="text-4xl mb-4">👻</p>
+                <p class="font-mono text-sm text-gray-500">NO_DATA_FOUND</p>
+                <button onclick="clearSubFilters()" class="mt-4 text-xs underline hover:text-[#FF3333]">RESET
+                    FILTERS</button>
+            </div>
             <div id="product-detail-view" class="product-detail-view hidden pt-10">
-                <button id="back-to-grid" class="back-button text-sm mb-10 cursor-pointer p-0 border-none bg-transparent text-gray-500 hover:text-black">← 返回產品列表</button>
+                <button id="back-to-grid"
+                    class="back-button text-sm mb-10 cursor-pointer p-0 border-none bg-transparent text-gray-500 hover:text-black">←
+                    返回產品列表</button>
                 <div class="detail-content flex flex-col lg:flex-row lg:space-x-16">
                     <div class="detail-image-container flex-1 mb-8 lg:mb-0">
-                        <img id="detail-main-image" src="" alt="產品圖片" class="w-full h-auto object-cover mb-4 rounded-lg border border-gray-200">
+                        <img id="detail-main-image" src="" alt="產品圖片"
+                            class="w-full h-auto object-cover mb-4 rounded-lg border border-gray-200">
                         <div id="detail-thumbnails" class="flex space-x-2 mt-4 overflow-x-auto pb-2"></div>
                     </div>
                     <div class="detail-info flex-1 pt-0 lg:pt-12">
                         <!-- 隱藏的 ID 欄位 -->
                         <span id="product_id" class="hidden"></span>
-                        
+
                         <h2 id="detail-name" class="mb-2 uppercase text-black"></h2>
-                        <p id="detail-original-price" class="detail-original-price text-xl font-mono line-through mb-1 hidden"></p>
+                        <p id="detail-original-price"
+                            class="detail-original-price text-xl font-mono line-through mb-1 hidden"></p>
                         <p class="detail-price text-xl font-extrabold mb-6" id="detail-price-range"></p>
                         <div class="variation-selection mb-10">
                             <h3 class="text-lg font-semibold mb-3 text-black">選擇款式 / 變體:</h3>
@@ -573,15 +771,18 @@
                                 <li>保養：輕柔手洗，自然風乾</li>
                             </ul>
                         </div>
-                        <button class="w-full py-4 add-to-cart uppercase text-base transition duration-200">加入購物車</button>
+                        <button
+                            class="w-full py-4 add-to-cart uppercase text-base transition duration-200">加入購物車</button>
                     </div>
                 </div>
             </div>
         </main>
-        
+
         <!-- CART DRAWER / SIDEBAR -->
-        <div id="cart-overlay" class="fixed inset-0 bg-black/50 z-[9998] hidden backdrop-blur-sm transition-opacity"></div>
-        <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white border-l border-black z-[9999] transform translate-x-full transition-transform duration-300 flex flex-col shadow-2xl">
+        <div id="cart-overlay" class="fixed inset-0 bg-black/50 z-[9998] hidden backdrop-blur-sm transition-opacity">
+        </div>
+        <div id="cart-sidebar"
+            class="fixed top-0 right-0 h-full w-full sm:w-[400px] bg-white border-l border-black z-[9999] transform translate-x-full transition-transform duration-300 flex flex-col shadow-2xl">
             <!-- Cart Header -->
             <div class="p-6 border-b border-black flex justify-between items-center bg-gray-50">
                 <h2 class="font-mono text-lg font-bold tracking-widest">[ CART_LOG ]</h2>
@@ -603,7 +804,8 @@
                     <span id="cart-total" class="font-bold">NT$ 0</span>
                 </div>
                 <!-- 結帳按鈕文字更新 -->
-                <button id="checkout-btn" class="w-full py-3 bg-black text-white font-mono hover:bg-[#FF3333] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed uppercase font-bold text-sm tracking-wider">
+                <button id="checkout-btn"
+                    class="w-full py-3 bg-black text-white font-mono hover:bg-[#FF3333] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed uppercase font-bold text-sm tracking-wider">
                     [ SEND TO GOOGLE FORM ]
                 </button>
                 <p class="text-[10px] text-gray-500 mt-2 font-mono text-center leading-tight">
@@ -619,10 +821,10 @@
         // ==========================================
         // 1. 你的 Google 表單網址 (請換成你的)
         const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID_HERE/viewform";
-        
+
         // 2. 你的「訂單內容」欄位 ID (請換成你的)
         // 在 Google 表單「取得預填連結」中找到 &entry.xxxxxxx=...
-        const ORDER_FIELD_ID = "entry.123456789"; 
+        const ORDER_FIELD_ID = "entry.123456789";
 
         // ==========================================
         // PART 1: DATAMATICS PARTICLE ENGINE
@@ -638,7 +840,7 @@
         let particles = [];
         let targetPixels = [];
         let animationFrameId;
-        
+
         const STATE = { CHAOS: 0, CONVERGE: 1, FORMED: 2, FADEOUT: 3, END: 4 };
         let currentState = STATE.CHAOS;
         let stateTimer = 0;
@@ -654,6 +856,7 @@
         function createTargetPixels() {
             const tempCanvas = document.createElement('canvas');
             const tCtx = tempCanvas.getContext('2d');
+            tCtx.canvas.willReadFrequently = true; 
             tempCanvas.width = width;
             tempCanvas.height = height;
 
@@ -666,29 +869,29 @@
 
             const longestLine = textLines.reduce((a, b) => a.length > b.length ? a : b);
             const charCount = longestLine.length;
-            const estimatedWidthPerCharRatio = 0.65; 
+            const estimatedWidthPerCharRatio = 0.65;
             const safeFontSize = (width * 0.9) / (charCount * estimatedWidthPerCharRatio);
-            const maxFontSize = width < 768 ? 50 : 80; 
+            const maxFontSize = width < 768 ? 50 : 80;
             let fontSize = Math.floor(Math.min(maxFontSize, safeFontSize));
-            fontSize = Math.max(12, fontSize); 
+            fontSize = Math.max(12, fontSize);
 
             tCtx.font = `900 ${fontSize}px "Space Mono", monospace`;
-            tCtx.fillStyle = '#000000'; 
+            tCtx.fillStyle = '#000000';
             tCtx.textAlign = 'center';
             tCtx.textBaseline = 'middle';
 
-            const lineHeight = fontSize * 1.6; 
+            const lineHeight = fontSize * 1.6;
             const totalTextHeight = textLines.length * lineHeight;
             const startY = (height - totalTextHeight) / 2 + (lineHeight / 2);
 
             textLines.forEach((line, index) => {
-                tCtx.fillText(line, width / 2, startY + (index * lineHeight) - (lineHeight * 0.2)); 
+                tCtx.fillText(line, width / 2, startY + (index * lineHeight) - (lineHeight * 0.2));
             });
 
             const imageData = tCtx.getImageData(0, 0, width, height);
             const data = imageData.data;
             const pixels = [];
-            const step = 3; 
+            const step = 3;
 
             for (let y = 0; y < height; y += step) {
                 for (let x = 0; x < width; x += step) {
@@ -704,16 +907,16 @@
             constructor(targetX, targetY) {
                 this.targetX = targetX;
                 this.targetY = targetY;
-                this.x = Math.random() * width; 
-                this.y = Math.random() * height; 
-                this.w = Math.random() * (width * 0.5) + 50; 
-                this.h = Math.random() * 4 + 2; 
-                this.vx = (Math.random() - 0.5) * 15; 
-                this.vy = 0; 
-                
+                this.x = Math.random() * width;
+                this.y = Math.random() * height;
+                this.w = Math.random() * (width * 0.5) + 50;
+                this.h = Math.random() * 4 + 2;
+                this.vx = (Math.random() - 0.5) * 15;
+                this.vy = 0;
+
                 const rand = Math.random();
-                if (rand > 0.7) this.color = '#111111'; 
-                else this.color = 'rgba(17, 17, 17, 0.3)'; 
+                if (rand > 0.7) this.color = '#111111';
+                else this.color = 'rgba(17, 17, 17, 0.3)';
             }
 
             update() {
@@ -722,13 +925,13 @@
                     if (this.x > width + this.w) this.x = -this.w;
                     if (this.x < -this.w) this.x = width + this.w;
                     if (Math.random() > 0.9) {
-                         this.w = Math.random() * (width * 0.8) + 20;
+                        this.w = Math.random() * (width * 0.8) + 20;
                     }
                 } else if (currentState === STATE.CONVERGE) {
                     this.x += (this.targetX - this.x) * 0.1;
-                    this.y += (this.targetY - this.y) * 0.1; 
-                    this.w += (3 - this.w) * 0.1; 
-                    this.h = 3; 
+                    this.y += (this.targetY - this.y) * 0.1;
+                    this.w += (3 - this.w) * 0.1;
+                    this.h = 3;
                     if (Math.abs(this.x - this.targetX) < 10) {
                         this.color = '#111111';
                     }
@@ -738,14 +941,14 @@
                     this.w = 3;
                     if (Math.random() > 0.995) {
                         this.w = Math.random() * 50 + 10;
-                        this.x = this.targetX - this.w / 2; 
-                        this.color = '#FF3333'; 
+                        this.x = this.targetX - this.w / 2;
+                        this.color = '#FF3333';
                     } else {
                         this.color = '#111111';
                     }
                 } else if (currentState === STATE.FADEOUT) {
-                    this.w += Math.random() * 20; 
-                    this.h *= 0.9; 
+                    this.w += Math.random() * 20;
+                    this.h *= 0.9;
                     this.x += (Math.random() - 0.5) * 100;
                     this.color = 'rgba(17,17,17,0.1)';
                 }
@@ -761,33 +964,33 @@
             resizeAnimation();
             particles = [];
             targetPixels = createTargetPixels();
-            
+
             const isMobile = width < 768;
             const bgParticleCount = isMobile ? 50 : 200;
 
             if (targetPixels.length > 0) {
                 targetPixels.forEach(p => {
-                     particles.push(new Particle(p.x, p.y));
+                    particles.push(new Particle(p.x, p.y));
                 });
             }
-            for(let i=0; i < bgParticleCount; i++) {
-                let p = new Particle(width/2, height/2); 
+            for (let i = 0; i < bgParticleCount; i++) {
+                let p = new Particle(width / 2, height / 2);
                 p.y = Math.random() * height;
-                p.w = width; 
-                p.h = Math.random() * 1 + 0.5; 
-                p.vx = (Math.random() - 0.5) * 2; 
-                p.color = 'rgba(17, 17, 17, 0.05)'; 
-                p.isBackground = true; 
+                p.w = width;
+                p.h = Math.random() * 1 + 0.5;
+                p.vx = (Math.random() - 0.5) * 2;
+                p.color = 'rgba(17, 17, 17, 0.05)';
+                p.isBackground = true;
                 particles.push(p);
             }
         }
 
         function animateLoop() {
-            ctx.fillStyle = 'rgba(250, 249, 246, 0.2)'; 
+            ctx.fillStyle = 'rgba(250, 249, 246, 0.2)';
             ctx.fillRect(0, 0, width, height);
 
             let convergedCount = 0;
-            const textParticles = particles.filter(p => !p.isBackground); 
+            const textParticles = particles.filter(p => !p.isBackground);
             const totalTargetParticles = textParticles.length;
 
             particles.forEach(p => {
@@ -813,8 +1016,8 @@
             if (currentState === STATE.CHAOS) {
                 stateTimer++;
                 if (Math.random() > 0.98) {
-                     ctx.fillStyle = 'rgba(17, 17, 17, 0.1)';
-                     ctx.fillRect(0, 0, width, height);
+                    ctx.fillStyle = 'rgba(17, 17, 17, 0.1)';
+                    ctx.fillRect(0, 0, width, height);
                 }
                 if (stateTimer > 120) currentState = STATE.CONVERGE;
             } else if (currentState === STATE.CONVERGE) {
@@ -823,7 +1026,7 @@
                 }
                 if (totalTargetParticles > 0 && convergedCount / totalTargetParticles > 0.8) {
                     if (!animationSoundPlayed && isAudioOn) {
-                        playIkedaSnap(); 
+                        playIkedaSnap();
                         animationSoundPlayed = true;
                     }
                     currentState = STATE.FORMED;
@@ -843,13 +1046,13 @@
 
         function endIntro() {
             if (currentState === STATE.END) return;
-            currentState = STATE.FADEOUT; 
+            currentState = STATE.FADEOUT;
             overlay.style.opacity = '0';
             skipBtn.style.opacity = '0';
             siteWrapper.style.opacity = '1';
             canvas.style.opacity = '0';
             setTimeout(() => {
-                canvas.remove(); 
+                canvas.remove();
                 overlay.remove();
                 skipBtn.remove();
                 cancelAnimationFrame(animationFrameId);
@@ -860,13 +1063,18 @@
         // ==========================================
         // PART 2: MAIN SITE LOGIC & AUDIO
         // ==========================================
-        
+
         let synth = null;
-        let isAudioOn = false; 
+        let isAudioOn = false;
         let masterGain = null;
-        let allProducts = []; 
-        let categoryData = {}; 
-        const featuredCategories = ["內褲兔 (Opanchu)", "三麗鷗 (Sanrio)"]; 
+        let allProducts = [];
+        let categoryData = {};
+        let currentZone = null; // '內褲兔' or '三麗鷗'
+        let activeFilters = {
+            character: null, // e.g., '酷洛米'
+            type: null       // e.g., '娃娃'
+        };
+        const featuredCategories = ["內褲兔 (Opanchu)", "三麗鷗 (Sanrio)"];
 
         function playIkedaSnap() {
             if (Tone && Tone.context.state === 'running') {
@@ -893,11 +1101,11 @@
                 await Tone.start();
             }
             if (!synth && Tone) {
-                masterGain = new Tone.Gain(0.4).toDestination(); 
+                masterGain = new Tone.Gain(0.4).toDestination();
                 synth = new Tone.Synth({
                     oscillator: { type: "square" },
                     envelope: { attack: 0.005, decay: 0.1, sustain: 0.01, release: 0.1 }
-                }).connect(masterGain); 
+                }).connect(masterGain);
             }
         }
 
@@ -919,25 +1127,25 @@
                 button.classList.add('bg-black', 'text-white');
                 button.classList.remove('text-black');
                 isAudioOn = true;
-                playBleep('G5', '32n'); 
+                playBleep('G5', '32n');
             }
         }
 
         function playBleep(note = "C5", duration = "64n") {
             if (isAudioOn && synth) {
-                synth.triggerAttackRelease(note, duration, Tone.now());  
+                synth.triggerAttackRelease(note, duration, Tone.now());
             }
         }
 
         function generateDataDecoration(productId) {
-            const ref = productId.slice(-4); 
+            const ref = productId.slice(-4);
             const x = Math.floor(Math.random() * 899) + 100;
             const y = Math.floor(Math.random() * 89) + 10;
             return `[ REF: ${ref} // X: ${x} Y: ${y} ]`;
         }
 
         window.addEventListener('load', () => {
-            initAnimation(); 
+            initAnimation();
             if (width < 768) {
                 currentState = STATE.CONVERGE;
             }
@@ -945,13 +1153,13 @@
         });
 
         skipBtn.addEventListener('click', (e) => {
-            e.stopPropagation(); 
+            e.stopPropagation();
             endIntro();
         });
 
         overlay.addEventListener('click', async () => {
-            await initAudioContext(); 
-            toggleAudio(); 
+            await initAudioContext();
+            toggleAudio();
             document.getElementById('intro-status').innerText = "_AUDIO_ENABLED_";
         });
 
@@ -972,7 +1180,7 @@
                         product_id: item.product_id,
                         product_name: item.product_name,
                         category_main: item.brand,
-                        category_sub: item.major_category, 
+                        category_sub: item.major_category,
                         numericPrice: minPrice,
                         displayPrice: displayPrice,
                         primaryImage: item.images[0],
@@ -984,7 +1192,10 @@
                             price: v.price,
                             stock: v.stock,
                             variation_images: v.variation_images
-                        }))
+                        })),
+                        marketing_copy:item.marketing_copy || '',
+                        tags:item.tags || [],
+                        brand:item.brand || [],
                     };
                 });
                 allProducts = processed.sort((a, b) => b.product_id.localeCompare(a.product_id));
@@ -1063,8 +1274,8 @@
         // ==========================================
         // PART 3: CART SYSTEM & CHECKOUT (GOOGLE FORM)
         // ==========================================
-        
-        let cart = []; 
+
+        let cart = [];
 
         function initCart() {
             const cartToggle = document.getElementById('cart-toggle');
@@ -1082,7 +1293,7 @@
             const sidebar = document.getElementById('cart-sidebar');
             const overlay = document.getElementById('cart-overlay');
             const isClosed = sidebar.classList.contains('translate-x-full');
-            
+
             if (isClosed) {
                 sidebar.classList.remove('translate-x-full');
                 overlay.classList.remove('hidden');
@@ -1155,7 +1366,7 @@
             } else {
                 container.innerHTML = '';
                 checkoutBtn.disabled = false;
-                
+
                 cart.forEach((item) => {
                     totalQty += item.qty;
                     totalPrice += item.price * item.qty;
@@ -1186,7 +1397,7 @@
             totalSpan.textContent = `NT$ ${totalPrice.toLocaleString()}`;
         }
 
-        window.changeQty = function(itemId, delta) {
+        window.changeQty = function (itemId, delta) {
             const item = cart.find(i => i.id === itemId);
             if (!item) return;
 
@@ -1229,7 +1440,7 @@
 
             // 4. Redirect
             const conf = confirm("即將跳轉至訂單確認表單。\n\n系統已自動填寫購物車內容，請補充您的聯絡資訊以利我們寄送賣場連結。");
-            if(conf) {
+            if (conf) {
                 window.open(finalUrl, '_blank');
                 cart = [];
                 updateCartUI();
@@ -1240,8 +1451,8 @@
         // ==========================================
         // PART 4: APP LOGIC
         // ==========================================
-        
-        function initApp(){ 
+
+        function initApp() {
             const logContainer = document.getElementById('system-log-container');
             if (logContainer) {
                 logContainer.innerHTML = `
@@ -1250,24 +1461,6 @@
                     <div class="log-item"><span class="log-date">2025.11.25</span><span class="log-category">[ CHI I KAWA ]</span><span class="log-content">吉伊卡哇伏見稻荷系列入庫。</span></div>
                 `;
             }
-
-            const mainFilter = document.getElementById('category-main-filter');
-            if (mainFilter) {
-                mainFilter.innerHTML = '<option value="all">:: ALL CATEGORIES</option>';
-                Object.keys(categoryData).forEach(main => {
-                    const option = document.createElement('option');
-                    option.value = main;
-                    option.textContent = main;
-                    mainFilter.appendChild(option);
-                });
-                mainFilter.addEventListener('change', (e) => {
-                    renderSubCategory(e.target.value);
-                    processProducts();
-                });
-            }
-            
-            const subFilter = document.getElementById('category-sub-filter');
-            if (subFilter) subFilter.addEventListener('change', processProducts);
 
             renderNavigationLinks(categoryData);
             renderLandingPage(categoryData);
@@ -1281,19 +1474,16 @@
                     navLinks.classList.toggle('pointer-events-none');
                 });
             }
-            
-            const sortBy = document.getElementById('sort-by');
-            if (sortBy) sortBy.addEventListener('change', processProducts);
 
             const backToGrid = document.getElementById('back-to-grid');
             if (backToGrid) backToGrid.addEventListener('click', () => showProductGrid('all'));
 
             const addToCartBtn = document.querySelector('.add-to-cart');
             if (addToCartBtn) {
-                addToCartBtn.onclick = function() {
+                addToCartBtn.onclick = function () {
                     const btn = this;
                     const currentId = document.getElementById('product_id') ? document.getElementById('product_id').textContent : null;
-                    if(!currentId) return;
+                    if (!currentId) return;
                     const selectedVarBtn = document.querySelector('.variation-button.ring-accent-color');
                     let selectedVarName = "預設";
                     let selectedPrice = 0;
@@ -1305,9 +1495,9 @@
                         const variant = product.variations.find(v => v.variation_name === selectedVarName);
                         selectedPrice = variant ? variant.price : product.numericPrice;
                     } else {
-                        if(product.variations.length > 0 && product.variations[0].variation_name !== '單一款式') {
-                             alert("請先選擇款式 // SELECT_VARIATION");
-                             return; 
+                        if (product.variations.length > 0 && product.variations[0].variation_name !== '單一款式') {
+                            alert("請先選擇款式 // SELECT_VARIATION");
+                            return;
                         }
                         selectedVarName = "單一款式";
                         selectedPrice = product.numericPrice;
@@ -1339,16 +1529,16 @@
         document.addEventListener('DOMContentLoaded', () => {
             fetchData();
         });
-        
+
         window.addEventListener('resize', () => {
             resizeAnimation();
-            if(currentState !== STATE.END) initAnimation();
+            if (currentState !== STATE.END) initAnimation();
         });
 
         function renderNavigationLinks(catData) {
             const navLinksContainer = document.getElementById('nav-links');
             if (!navLinksContainer) return;
-            navLinksContainer.innerHTML = ''; 
+            navLinksContainer.innerHTML = '';
             Object.keys(catData).forEach(mainCategory => {
                 const link = document.createElement('a');
                 link.href = '#';
@@ -1356,8 +1546,9 @@
                 link.textContent = mainCategory;
                 link.onclick = (e) => {
                     e.preventDefault();
-                    playBleep('G4', '64n'); 
+                    playBleep('G4', '64n');
                     showProductGrid(mainCategory);
+                    
                     const navLinks = document.getElementById('nav-links');
                     if (navLinks) navLinks.classList.add('-translate-x-full', 'opacity-0', 'pointer-events-none');
                 };
@@ -1365,31 +1556,13 @@
             });
         }
 
-        function renderSubCategory(mainCategory) {
-            const subFilter = document.getElementById('category-sub-filter');
-            if (!subFilter) return;
-            subFilter.innerHTML = '<option value="all">:: ALL SUB-CATEGORIES</option>';
-            subFilter.disabled = true;
-            if (mainCategory === 'all' || !categoryData[mainCategory]) return;
-            const subCategories = categoryData[mainCategory];
-            if (subCategories && subCategories.length > 0) {
-                subCategories.forEach(sub => {
-                    const option = document.createElement('option');
-                    option.value = sub;
-                    option.textContent = sub;
-                    subFilter.appendChild(option);
-                });
-                subFilter.disabled = false;
-            }
-        }
-
-        function renderLandingPage(catData) {
+        function renderLandingPage(catData) { 
             const landingGrid = document.getElementById('landing-category-grid');
             if (!landingGrid) return;
             landingGrid.innerHTML = ''; 
-            const categoriesToRender = Object.keys(catData).filter(cat => featuredCategories.includes(cat));
+            const categoriesToRender = Object.keys(catData).filter(cat => featuredCategories.includes(cat)); 
             categoriesToRender.forEach((mainCategory, index) => {
-                const firstProduct = allProducts.find(p => p.category_main === mainCategory&& p.category_sub === "玩偶/玩具");
+                const firstProduct = allProducts.find(p => p.category_main === mainCategory && p.category_sub === "玩偶/玩具");
                 const coverImage = firstProduct ? firstProduct.primaryImage : 'https://placehold.co/800x600/BBBBBB/333333?text=Category';
                 const cardHTML = `
                     <div class="vertical-category-card" onclick="showProductGrid('${mainCategory}')">
@@ -1409,19 +1582,6 @@
                 landingGrid.innerHTML += cardHTML;
             });
             showLandingPage();
-        }
-
-        function processProducts() {
-            let products = [...allProducts];
-            const mainCategory = document.getElementById('category-main-filter') ? document.getElementById('category-main-filter').value : 'all';
-            const subCategory = document.getElementById('category-sub-filter') ? document.getElementById('category-sub-filter').value : 'all';
-            if (mainCategory !== 'all') products = products.filter(p => p.category_main === mainCategory);
-            if (subCategory !== 'all') products = products.filter(p => p.category_sub === subCategory);
-            const sortBy = document.getElementById('sort-by');
-            const sortMethod = sortBy ? sortBy.value : 'default';
-            if (sortMethod === 'price-asc') products.sort((a, b) => a.numericPrice - b.numericPrice);
-            else if (sortMethod === 'price-desc') products.sort((a, b) => b.numericPrice - a.numericPrice);
-            renderProducts(products);
         }
 
         function renderProducts(products) {
@@ -1451,39 +1611,39 @@
         }
 
         function showProductDetail(id) {
-            playBleep('D5', '64n'); 
+            playBleep('D5', '64n');
             const product = allProducts.find(p => p.product_id === id);
             if (!product) return;
             const mainImage = document.getElementById('detail-main-image');
-            const productidSpan = document.getElementById('product_id'); 
+            const productidSpan = document.getElementById('product_id');
             const detailName = document.getElementById('detail-name');
             const priceRange = document.getElementById('detail-price-range');
-            const originalPriceElement = document.getElementById('detail-original-price'); 
+            const originalPriceElement = document.getElementById('detail-original-price');
             const mainTitle = document.getElementById('main-title');
             const thumbnailsContainer = document.getElementById('detail-thumbnails');
             const variationOptionsContainer = document.getElementById('variation-options');
-            
+
             if (mainImage) mainImage.src = product.primaryImage;
-            if (productidSpan) productidSpan.textContent = product.product_id; 
+            if (productidSpan) productidSpan.textContent = product.product_id;
             if (detailName) detailName.textContent = product.product_name;
             if (priceRange) priceRange.textContent = product.displayPrice;
             if (originalPriceElement) {
-                 if (product.originalPrice) {
+                if (product.originalPrice) {
                     originalPriceElement.textContent = `NT$ ${product.originalPrice.toLocaleString()}`;
                     originalPriceElement.classList.remove('hidden');
-                 } else {
+                } else {
                     originalPriceElement.classList.add('hidden');
-                 }
+                }
             }
             if (mainTitle) {
                 mainTitle.textContent = product.product_name;
-                mainTitle.style.fontFamily = "'Inter', sans-serif"; 
+                mainTitle.style.fontFamily = "'Inter', sans-serif";
                 mainTitle.style.fontWeight = "900";
                 mainTitle.style.fontSize = '2.2rem';
                 mainTitle.style.color = '#000';
             }
             if (thumbnailsContainer) {
-                thumbnailsContainer.innerHTML = ''; 
+                thumbnailsContainer.innerHTML = '';
                 product.images.forEach((imgUrl, index) => {
                     const thumbnail = document.createElement('img');
                     thumbnail.src = imgUrl;
@@ -1521,7 +1681,7 @@
                             } else if (v.variation_images[0].option_image_url) {
                                 imgUrl = v.variation_images[0].option_image_url;
                             }
-                            
+
                             if (imgUrl && mainImage) {
                                 mainImage.src = imgUrl;
                                 // 移除縮圖選中狀態，因為現在顯示的是變體圖
@@ -1534,33 +1694,33 @@
             }
             document.getElementById('landing-view').classList.add('hidden');
             document.getElementById('product-grid-container').classList.add('hidden');
-            document.getElementById('filter-controls').classList.add('hidden');
+            // document.getElementById('filter-controls').classList.add('hidden'); // 原本的這行可以刪除，因為 filter-controls 已經不存在了
             document.getElementById('product-detail-view').classList.remove('hidden');
         }
 
         function showProductGrid(mainCategory = 'all') {
+            console.log(mainCategory);
+            currentZone=mainCategory;
+            setupFilterBar(currentZone);
+            
             playBleep('A4', '64n');
             const mainTitle = document.getElementById('main-title');
             if (mainTitle) {
-                mainTitle.removeAttribute('style'); 
-                mainTitle.textContent = "【 // CURATED ARCHIVE 】"; 
+                mainTitle.removeAttribute('style');
+                mainTitle.textContent = "【 // CURATED ARCHIVE 】";
                 mainTitle.style.color = '#000';
             }
-            const mainFilter = document.getElementById('category-main-filter');
-            if (mainFilter) {
-                mainFilter.value = mainCategory;
-                renderSubCategory(mainCategory);
-            }
+
             document.getElementById('landing-view').classList.add('hidden');
             document.getElementById('product-detail-view').classList.add('hidden');
             document.getElementById('product-grid-container').classList.remove('hidden');
-            document.getElementById('filter-controls').classList.remove('hidden');
-            processProducts(); 
+            
+            // 重要：切換到新的 applyFilters
+            applyFilters(); 
         }
 
         function showLandingPage() {
             document.getElementById('product-grid-container').classList.add('hidden');
-            document.getElementById('filter-controls').classList.add('hidden');
             document.getElementById('product-detail-view').classList.add('hidden');
             document.getElementById('landing-view').classList.remove('hidden');
             const mainTitle = document.getElementById('main-title');
@@ -1570,7 +1730,115 @@
                 mainTitle.style.color = '#000';
             }
         }
+        // 3. 設定篩選列按鈕
+        function setupFilterBar(zoneName) {
+            const charRow = document.getElementById('filter-row-character');
+            const charBtnGroup = document.getElementById('char-btn-group');
 
+            // 清空舊按鈕
+            charBtnGroup.innerHTML = '';
+            // 重置所有按鈕樣式
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+
+            if (zoneName === '三麗鷗 (Sanrio)') { // 修正為完整的品牌名稱以匹配 currentZone
+                charRow.classList.remove('hidden');
+                // 動態產生三麗鷗角色按鈕
+                const chars = ['酷洛米', '大耳狗', '美樂蒂', 'Hello Kitty', '漢頓', '帕恰狗'];
+                chars.forEach(char => {
+                    const btn = document.createElement('button');
+                    btn.className = 'filter-btn px-3 py-1 text-xs rounded-full';
+                    btn.textContent = char;
+                    btn.onclick = () => toggleFilter('character', char);
+                    charBtnGroup.appendChild(btn);
+                });
+            } else {
+                // 內褲兔不需要角色篩選
+                charRow.classList.add('hidden');
+            }
+        }
+
+        // 4. 切換篩選條件
+        function toggleFilter(category, value) {
+            // Toggle Logic
+            if (activeFilters[category] === value) {
+                activeFilters[category] = null; // 取消
+            } else {
+                activeFilters[category] = value; // 選取
+            }
+
+            updateFilterBtnStyles();
+            applyFilters();
+        }
+
+        // 5. 更新按鈕視覺
+        function updateFilterBtnStyles() {
+            // 處理動態生成的角色按鈕
+            const charBtns = document.querySelectorAll('#char-btn-group .filter-btn');
+            charBtns.forEach(btn => {
+                if (btn.textContent === activeFilters.character) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // 處理靜態的類型按鈕 (注意：這裡用包含匹配，因為按鈕文字可能是 "吊飾/鑰匙圈")
+            const typeBtns = document.querySelectorAll('#filter-row-type .filter-btn');
+            typeBtns.forEach(btn => {
+                // 取得按鈕核心關鍵字 (假設是按鈕文字的前兩個字，或是直接 data-val 比較好，但這裡為了簡單直接比對)
+                // 簡單作法：如果 activeFilters.type 不為空，且按鈕文字包含它
+                if (activeFilters.type && btn.textContent.includes(activeFilters.type)) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+
+        // 6. 核心篩選與渲染
+        function applyFilters() {
+            if (!allProducts.length) return;
+
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = ''; // Clear
+
+            const filtered = allProducts.filter(p => {
+                const tags = p.tags || [];
+                const name = p.product_name || "";
+                const brand = p.brand || "";
+                const cat = p.product_category || "";
+
+                // A. Zone Filter (Hard Filter)
+                // 如果是 'all' (例如從詳情頁返回)，則顯示所有，否則嚴格比對品牌
+                let zoneMatch = (currentZone === 'all') || brand.includes(currentZone);
+                if (!zoneMatch) return false; 
+                
+                // B. Character Filter
+                if (activeFilters.character) {
+                    if (!tags.includes(activeFilters.character) && !name.includes(activeFilters.character)) return false;
+                }
+                  
+                // C. Type Filter
+                if (activeFilters.type) {
+                    const k = activeFilters.type;
+                    const typeMatch = tags.some(t => t.includes(k)) || name.includes(k) || cat.includes(k);
+                    if (!typeMatch) return false;
+                }
+
+                return true;
+            });
+
+            // Update UI Count
+            console.log("Filtered Items Count:", filtered.length);
+            renderProducts(filtered); 
+        }
+
+        function clearSubFilters() {
+            activeFilters = { character: null, type: null };
+            updateFilterBtnStyles();
+            applyFilters();
+        }
     </script>
 </body>
+
 </html>

@@ -424,9 +424,31 @@
             position: relative;
         }
 
-        .product-card:hover {
-            border: 1px solid var(--accent);
+              /* 沿用剛剛的動畫定義 (如果沒有請加上) */
+        @keyframes glitch-hard {
+            0% { transform: translate(0, 0) skew(0deg); }
+            20% { transform: translate(-3px, 2px) skew(-2deg); }
+            40% { transform: translate(-3px, -2px) skew(2deg); }
+            60% { transform: translate(3px, 2px) skew(0deg); }
+            80% { transform: translate(3px, -2px) skew(-1deg); }
+            100% { transform: translate(0, 0) skew(0deg); }
         }
+
+        .product-card:hover img {
+            /* invert(1): 100% 負片反轉
+               contrast(1.5): 提高對比，讓負片看起來更「硬」、更電子化，不會灰灰的
+               saturate(0): (選用) 如果想要純黑白負片，加上這行；想保留詭異顏色則拿掉
+            */
+            filter: invert(1) contrast(1.5);
+
+            /* 混合模式：difference 會讓圖片跟背景色做差值運算，
+               這在淺色背景上效果極佳，會讓圖片邊框消失，融進背景裡 */
+            mix-blend-mode: difference;
+
+            /* 保持跳動動畫 */
+            animation: glitch-hard 0.2s steps(2) infinite;
+        }
+
 
         .detail-original-price {
             color: var(--code-comment);

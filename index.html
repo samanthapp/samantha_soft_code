@@ -209,19 +209,23 @@
             animation: data-flow 30s cubic-bezier(0.65, 0, 0.35, 1) infinite,
                 granularity-pulse 8s ease-in-out infinite alternate;
         }
+
         /* --- 篩選按鈕樣式 --- */
         .filter-btn {
             border: 1px solid #ccc;
             background: white;
             transition: all 0.2s;
             font-family: 'Space Mono', monospace;
-            font-size: 0.75rem; /* text-xs */
+            font-size: 0.75rem;
+            /* text-xs */
         }
+
         .filter-btn:hover {
             border-color: black;
             background: black;
             color: white;
         }
+
         .filter-btn.active {
             border-color: black;
             background: black;
@@ -229,22 +233,28 @@
         }
 
         /* Mobile Filter Horizontal Scroll Optimized */
-        #filter-row-character, #filter-row-type {
-            flex-wrap: nowrap; /* 不換行 */
-            overflow-x: auto; /* 可橫向滑動 */
-            padding-bottom: 5px; /* 留點空間給捲軸 */
-            -webkit-overflow-scrolling: touch; /* iOS 滑動順暢 */
+        #filter-row-character,
+        #filter-row-type {
+            flex-wrap: nowrap;
+            /* 不換行 */
+            overflow-x: auto;
+            /* 可橫向滑動 */
+            padding-bottom: 5px;
+            /* 留點空間給捲軸 */
+            -webkit-overflow-scrolling: touch;
+            /* iOS 滑動順暢 */
         }
-        
+
         /* 防止按鈕在橫向排列時被壓縮 */
-        #filter-row-character button, #filter-row-type button {
+        #filter-row-character button,
+        #filter-row-type button {
             flex-shrink: 0;
         }
 
         /* 隱藏捲軸但保留功能 */
-        #filter-row-character::-webkit-scrollbar, 
-        #filter-row-type::-webkit-scrollbar { 
-            display: none; 
+        #filter-row-character::-webkit-scrollbar,
+        #filter-row-type::-webkit-scrollbar {
+            display: none;
         }
 
         @keyframes data-flow {
@@ -424,14 +434,31 @@
             position: relative;
         }
 
-              /* 沿用剛剛的動畫定義 (如果沒有請加上) */
+        /* 沿用剛剛的動畫定義 (如果沒有請加上) */
         @keyframes glitch-hard {
-            0% { transform: translate(0, 0) skew(0deg); }
-            20% { transform: translate(-3px, 2px) skew(-2deg); }
-            40% { transform: translate(-3px, -2px) skew(2deg); }
-            60% { transform: translate(3px, 2px) skew(0deg); }
-            80% { transform: translate(3px, -2px) skew(-1deg); }
-            100% { transform: translate(0, 0) skew(0deg); }
+            0% {
+                transform: translate(0, 0) skew(0deg);
+            }
+
+            20% {
+                transform: translate(-3px, 2px) skew(-2deg);
+            }
+
+            40% {
+                transform: translate(-3px, -2px) skew(2deg);
+            }
+
+            60% {
+                transform: translate(3px, 2px) skew(0deg);
+            }
+
+            80% {
+                transform: translate(3px, -2px) skew(-1deg);
+            }
+
+            100% {
+                transform: translate(0, 0) skew(0deg);
+            }
         }
 
         .product-card:hover img {
@@ -506,7 +533,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(250, 249, 246, 0.95); /* 半透明背景 */
+            background-color: rgba(250, 249, 246, 0.95);
+            /* 半透明背景 */
             backdrop-filter: blur(10px);
             z-index: 10000;
             display: flex;
@@ -569,12 +597,16 @@
         /* 背景圖片預覽區 (預設隱藏) */
         #index-preview-bg {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
             object-fit: cover;
             opacity: 0;
             transition: opacity 0.3s ease-in-out;
             z-index: 0;
-            filter: grayscale(100%) contrast(120%); /* 保持冷冽感 */
+            filter: grayscale(100%) contrast(120%);
+            /* 保持冷冽感 */
             pointer-events: none;
         }
 
@@ -582,33 +614,45 @@
         .index-item {
             position: relative;
             z-index: 10;
-            font-family: 'Space Mono', monospace; /* 等寬字體是關鍵 */
-            font-size: 1.5rem; /* 大一點 */
+            font-family: 'Space Mono', monospace;
+            /* 等寬字體是關鍵 */
+            font-size: 1.5rem;
+            /* 大一點 */
             padding: 20px 20px;
-            border-bottom: 1px solid rgba(0,0,0,0.1);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.1);
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
             transition: all 0.2s;
-            background: rgba(255, 255, 255, 0.7); /* 半透明白，讓字在圖上看得見 */
+            background: rgba(255, 255, 255, 0.7);
+            /* 半透明白，讓字在圖上看得見 */
         }
-        
+
         .index-item:last-child {
             border-bottom: none;
         }
 
         /* Hover 特效 */
         .index-item:hover {
-            background: rgba(255, 255, 255, 0.2); /* 變更透明度 */
-            color: var(--accent); /* 變紅 */
-            padding-left: 40px; /* 向右縮排 */
+            background: rgba(255, 255, 255, 0.2);
+            /* 變更透明度 */
+            color: var(--accent);
+            /* 變紅 */
+            padding-left: 40px;
+            /* 向右縮排 */
         }
 
         /* 手機版適配 */
         @media (max-width: 768px) {
-            .index-item { font-size: 1rem; padding: 15px 10px; }
-            .index-item:hover { padding-left: 20px; }
+            .index-item {
+                font-size: 1rem;
+                padding: 15px 10px;
+            }
+
+            .index-item:hover {
+                padding-left: 20px;
+            }
         }
 
         .text-black {
@@ -783,7 +827,8 @@
             <!-- 修正結構：w-full + justify-between -->
             <nav class="flex justify-between items-center w-full relative h-16">
                 <!-- LOGO (永遠在左) - 改用 SVG 圖片引用模式 -->
-                <a href="#" class="hacker-logo z-50 flex items-center text-black hover:text-[#FF3333] transition-colors" onclick="showLandingPage()">
+                <a href="#" class="hacker-logo z-50 flex items-center text-black hover:text-[#FF3333] transition-colors"
+                    onclick="showLandingPage()">
                     <!-- Replace content of d="" with your actual logo.svg path data -->
                     <img src="logo.svg" alt="SAMANTHA LOGO" class="w-auto object-contain" />
                 </a>
@@ -808,7 +853,8 @@
                         [ AUDIO OFF ]
                     </button>
                     <!-- 系統選單按鈕：取代原本的漢堡圖示 -->
-                    <button id="menu-toggle" class="text-xs font-mono font-bold cursor-pointer text-black border border-black px-2 py-1 hover:bg-black hover:text-white transition">
+                    <button id="menu-toggle"
+                        class="text-xs font-mono font-bold cursor-pointer text-black border border-black px-2 py-1 hover:bg-black hover:text-white transition">
                         [ SYSTEM_MENU ]
                     </button>
                 </div>
@@ -842,6 +888,62 @@
                             <!-- JS Generated -->
                         </div>
                     </div>
+                </div>
+            </div>
+ 
+            <!-- WORK / ART VIEW (NEW SECTION) -->
+            <div id="work-view" class="hidden h-screen flex flex-col">
+                <!-- Header -->
+                <div class="p-4 border-b border-black flex justify-between items-center bg-[#FAF9F6] flex-shrink-0">
+                    <h2 class="font-mono text-xl text-[#FF3333] animate-pulse">FATAL_EXCEPTION_0x89A</h2>
+                    <button onclick="showLandingPage()" class="font-mono text-xs hover:bg-black hover:text-white border border-black px-2 py-1 transition">
+                        [ RETURN_TO_SAFE_MODE ]
+                    </button>
+                </div>
+                
+                <!-- Content Container: Flex for desktop (row), col for mobile -->
+                <div class="flex-grow flex flex-col md:flex-row overflow-hidden">
+                    <!-- P5.js Container -->
+                    <div class="w-full md:w-2/3 h-1/2 md:h-full relative bg-black border-b md:border-b-0 md:border-r border-black">
+                        <div id="p5-loading" class="absolute inset-0 flex items-center justify-center text-[#FF3333] font-mono text-sm z-0">
+                            LOADING_ART_MODULE...
+                        </div>
+                        <iframe id="art-frame" class="w-full h-full border-none relative z-10" title="Generative Art"></iframe>
+                    </div>
+
+                    <!-- Creative Text Description Area -->
+                    <div class="w-full md:w-1/3 h-1/2 md:h-full bg-[#FAF9F6] p-6 overflow-y-auto font-mono text-sm flex flex-col">
+                        
+                        <!-- File Selector List -->
+                        <div class="mb-8 border-b border-black pb-4">
+                            <div class="text-xs text-gray-500 mb-2 font-bold tracking-widest">[ FILE_SYSTEM ]</div>
+                            <div id="art-file-list" class="flex flex-col gap-2">
+                                <!-- JS Generated Buttons will go here -->
+                            </div>
+                        </div>
+
+                        <!-- Dynamic Content -->
+                        <div class="flex-grow">
+                            <div class="text-gray-500 mb-2 text-xs">
+                                // ARTIST_STATEMENT.txt<br>
+                                // READ_ONLY_MODE
+                            </div>
+                            <h3 id="art-title" class="font-bold text-lg mb-4 text-black"></h3>
+                            <div id="art-desc" class="mb-4 leading-relaxed text-gray-700 whitespace-pre-line"></div>
+                        </div>
+
+                        <!-- Meta Info Footer -->
+                        <div class="mt-auto border-t border-dashed border-gray-400 pt-4">
+                            <p id="art-meta" class="text-xs text-gray-500 font-mono leading-relaxed">
+                                <!-- JS Generated Meta -->
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Footer -->
+                <div class="border-t border-black p-2 text-center font-mono text-xs text-gray-500 bg-[#FAF9F6] flex-shrink-0">
+                    [ INTERACTIVE_MODE: ENABLED ]
                 </div>
             </div>
 
@@ -996,7 +1098,7 @@
         function createTargetPixels() {
             const tempCanvas = document.createElement('canvas');
             const tCtx = tempCanvas.getContext('2d');
-            tCtx.canvas.willReadFrequently = true; 
+            tCtx.canvas.willReadFrequently = true;
             tempCanvas.width = width;
             tempCanvas.height = height;
 
@@ -1214,7 +1316,7 @@
             character: null, // e.g., '酷洛米'
             type: null       // e.g., '娃娃'
         };
-        const featuredCategories = ["內褲兔 (Opanchu)", "三麗鷗 (Sanrio)", "塔麻可吉 (Tamagotchi)","崔高興 (Choigosim)"];
+        const featuredCategories = ["內褲兔 (Opanchu)", "三麗鷗 (Sanrio)", "塔麻可吉 (Tamagotchi)", "崔高興 (Choigosim)"];
 
         function playIkedaSnap() {
             if (Tone && Tone.context.state === 'running') {
@@ -1333,9 +1435,9 @@
                             stock: v.stock,
                             variation_images: v.variation_images
                         })),
-                        marketing_copy:item.marketing_copy || '',
-                        tags:item.tags || [],
-                        brand:item.brand || [],
+                        marketing_copy: item.marketing_copy || '',
+                        tags: item.tags || [],
+                        brand: item.brand || [],
                     };
                 });
                 allProducts = processed.sort((a, b) => b.product_id.localeCompare(a.product_id));
@@ -1685,7 +1787,7 @@
             const navLinksContainer = document.getElementById('nav-links-container');
             if (!navLinksContainer) return;
             navLinksContainer.innerHTML = '';
-            
+
             // Add Home Link
             const homeLink = document.createElement('a');
             homeLink.href = '#';
@@ -1715,57 +1817,187 @@
                 counter++;
             });
         }
+        // ==========================================
+        // ARTWORK DATABASE
+        // ==========================================
+        const artworks = [
+            {
+                id: "ERR_01",
+                title: "Kyoto Data Breath: Concrete & Resonance (京都數據之息：清水模與共鳴)",
+                src: "p5.html", // 您的第一個 p5 作品檔案
+                desc: "作品理念： 本作是一件探討「理性框架與感性流動」的生成式藝術（Generative Art）作品。靈感源自冰島作曲家 Jóhann Jóhannsson 的極簡主義音樂，以及京都龍安寺的枯山水美學。在視覺語言上，我捨棄了傳統的和風暖色，轉而採用當代建築大師安藤忠雄或時尚設計師 Rick Owens 筆下的「冷灰階（Greige）」色調。背景模擬乾燥清水模（Dry Concrete）的質感，隨著程式運行的時間軸，牆面會緩慢地浮現水漬與風化痕跡，展現數位世界中的「時間鏽蝕」。視覺構成：靜止的錨點（The Anchors）： 畫面中散落的墨色巨石，由雙層雜訊演算法生成，模擬自然界中非規律的粗糙輪廓。它們象徵著「不變」，如同深海中的黑色碑石，靜靜承載著歲月。流動的脈搏（The Pulse）： 穿梭於巨石底部的，是四條象徵弦樂四重奏的數據波浪。它們以傳統日本色——茜色（Akane Red）與苔色（Koke Green）呈現，在冷冽的灰色空間中，如血液般微弱卻頑強地搏動。互動與體驗： 觀者透過游標的介入，如同在寧靜的水面輕輕撥動琴弦。數據粒子會因此產生擾動與共鳴，隨後又在演算法的引導下回歸平靜。這不僅是視覺的呈現，更是一場關於「呼吸、數據與孤寂感」的數位冥想。",
+                meta: "> SYSTEM_ANALYSIS:\n> ENTROPY_LEVEL: 98%\n> RENDER_TIME: REALTIME"
+            },
+            {
+                id: "ERR_02",
+                title: "Flight from the City：金色昇華",
+                src: "p5_2.html", // 假設您有第二個作品，若無可先填 p5.html 測試
+                desc: "本作是對 Jóhann Jóhannsson 樂曲《Flight from the City》的視覺轉譯。樂曲中重複而極簡的鋼琴聲，彷彿是一種儀式，將沈重的現實層層剝離。視覺上，我構建了一個極簡的冥想空間。背景色取自京都的「障子 (Shoji)」——那是透著光的米白和紙色（#F9F7F2），象徵著留白與寧靜。數百個金色的粒子並非被重力束縛，而是擁有「反重力」的物理屬性。程式碼透過 Perlin Noise（柏林雜訊）模擬了看不見的熱氣流，驅動這些代表「記憶碎片」的粒子緩慢蜿蜒上升。它們依照正弦波（Sine Wave）的頻率呼吸閃爍，如同鋼琴鍵盤被輕輕敲擊的節奏。這是一個關於「釋放」的過程：當記憶不再沉重，便化作金色的微塵，輕盈地飛離城市，消融在光的彼端。",
+                meta: "> SYSTEM_ANALYSIS:\n> STACK_OVERFLOW: TRUE\n> DEPTH: INFINITE"
+            },
+            {
+                id: "ERR_03",
+                title: "Good Night, Day：光的沉積",
+                src: "p5_3.html", // 第三個作品
+                desc: "Jóhann Jóhannsson 的《Good Night, Day》， 我看見的不是夜晚的黑暗，而是光的重量。在這個名為「GOOD NIGHT」的程式裡， 我寫下了重力，但拿掉了消失的指令。 每一個粒子都是今天的一個念頭， 它們穿過午夜藍的深空， 慢慢地、安靜地，降落在地平線上。它們沒有消失，而是堆積成了一層溫暖的琥珀色。 焦慮塵埃落定，變成了光。",
+                meta: "> SYSTEM_ANALYSIS:\n> WAVE_FORM: RANDOM\n> FLUID_SIM: ACTIVE"
+            }
+        ];
+        let currentArtIndex = 0;
 
-        function renderLandingPage(catData) { 
+        function showWorkView() {
+            playBleep('F#2', '16n'); // Glitchy sound
+            document.getElementById('landing-view').classList.add('hidden');
+            document.getElementById('product-grid-container').classList.add('hidden');
+            document.getElementById('product-detail-view').classList.add('hidden');
+            
+            const workView = document.getElementById('work-view');
+            if(workView) {
+                workView.classList.remove('hidden');
+                // 初始化載入列表與第一個作品
+                renderArtworkList();
+                loadArtwork(0); 
+            }
+            
+            const mainTitle = document.getElementById('main-title');
+            if (mainTitle) {
+                mainTitle.classList.add('hidden');
+            }
+        }
+
+        function renderArtworkList() {
+            const listContainer = document.getElementById('art-file-list');
+            if (!listContainer) return;
+            listContainer.innerHTML = '';
+
+            artworks.forEach((art, index) => {
+                const btn = document.createElement('button');
+                btn.className = `text-left font-mono text-xs py-2 px-3 border border-transparent hover:border-black hover:bg-white hover:text-black transition flex justify-between items-center group w-full ${index === currentArtIndex ? 'bg-black text-white' : 'text-gray-600'}`;
+                btn.onclick = () => loadArtwork(index);
+                
+                const indicator = index === currentArtIndex ? '●' : '○';
+                
+                btn.innerHTML = `
+                    <span>${indicator} ${art.id}</span>
+                    <span class="opacity-50 group-hover:opacity-100 text-[10px] uppercase tracking-tighter hidden md:inline-block">${art.title.split('(')[0]}</span>
+                `;
+                listContainer.appendChild(btn);
+            });
+        }
+
+        function loadArtwork(index) {
+            if (index < 0 || index >= artworks.length) return;
+            
+            currentArtIndex = index;
+            const art = artworks[index];
+            
+            // 1. 更新 iframe
+            const iframe = document.getElementById('art-frame');
+            if (iframe) {
+                // 只有當 src 真的改變時才重新載入，避免閃爍
+                // 但如果是第一次載入 (src為空) 則必須載入
+                if (!iframe.src.includes(art.src)) {
+                    // 為了模擬載入感，先顯示 Loading，再載入 iframe
+                    const loadingText = document.getElementById('p5-loading');
+                    if(loadingText) loadingText.style.display = 'flex';
+                    
+                    iframe.src = art.src;
+                    
+                    iframe.onload = () => {
+                        if(loadingText) loadingText.style.display = 'none';
+                    };
+                }
+            }
+
+            // 2. 更新文字資訊
+            document.getElementById('art-title').textContent = art.title;
+            document.getElementById('art-desc').textContent = art.desc;
+            document.getElementById('art-meta').innerHTML = art.meta.replace(/\n/g, '<br>');
+
+            // 3. 更新列表按鈕狀態 (重繪列表最簡單)
+            renderArtworkList();
+            
+            // 4. 音效
+            playBleep('A3', '32n');
+        }
+        function renderLandingPage(catData) {
             const landingIndexContainer = document.getElementById('data-index');
             const previewBg = document.getElementById('index-preview-bg');
             if (!landingIndexContainer) return;
-            
+
             // 清除除了 previewBg 以外的內容
             // 先保留 previewBg 元素
             const bgElement = landingIndexContainer.querySelector('#index-preview-bg');
             landingIndexContainer.innerHTML = '';
-            if(bgElement) landingIndexContainer.appendChild(bgElement);
+            if (bgElement) landingIndexContainer.appendChild(bgElement);
 
-            const categoriesToRender = Object.keys(catData).filter(cat => featuredCategories.includes(cat)); 
-            
+            const categoriesToRender = Object.keys(catData).filter(cat => featuredCategories.includes(cat));
+
             categoriesToRender.forEach((mainCategory, index) => {
                 const firstProduct = allProducts.find(p => p.category_main === mainCategory && p.category_sub === "玩偶/玩具");
                 const coverImage = firstProduct ? firstProduct.primaryImage : 'https://placehold.co/800x600/BBBBBB/333333?text=Category';
-                
+
                 // Status Logic (Random for now)
                 const statuses = ["HOT", "NEW", "RESTOCK", "LOW_STOCK"];
                 const status = statuses[index % statuses.length];
-                
+
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'index-item';
                 itemDiv.dataset.img = coverImage;
                 itemDiv.onclick = () => showProductGrid(mainCategory);
-                
+
                 itemDiv.innerHTML = `
                     <span>0${index + 1} . . . . . . ${mainCategory.toUpperCase()}</span>
                     <span class="text-xs">[ STATUS: ${status} ]</span>
                 `;
-                
+
                 // Add Hover Events
                 itemDiv.addEventListener('mouseenter', () => {
                     const imgUrl = itemDiv.dataset.img;
-                    if(previewBg) {
+                    if (previewBg) {
                         previewBg.src = imgUrl;
                         previewBg.style.opacity = '0.15'; // 圖片淡淡浮現
                         playBleep('C2', '64n'); // Low pitch sound
                     }
                 });
-                
+
                 itemDiv.addEventListener('mouseleave', () => {
-                    if(previewBg) previewBg.style.opacity = '0';
+                    if (previewBg) previewBg.style.opacity = '0';
                 });
 
                 landingIndexContainer.appendChild(itemDiv);
             });
+            // --- INSERT NEW ART ITEM HERE ---
+            const artIndex = categoriesToRender.length + 1; // e.g. 03
+            const num = artIndex < 10 ? `0${artIndex}` : artIndex;
+
+            const artDiv = document.createElement('div');
+            artDiv.className = 'index-item';
+            // Placeholder image for Art
+            artDiv.dataset.img = 'https://placehold.co/800x600/111/FFF?text=SYNTAX_ERROR';
+            artDiv.onclick = () => showWorkView(); // New function
+
+            artDiv.innerHTML = `
+                <span class="text-[#FF3333] font-bold">${num} . . . . . . [ SYNTAX_ERROR ]</span>
+                <span class="text-xs text-[#FF3333]">[ STATUS: CORRUPTED ]</span>
+            `;
+            // Add Hover Events for Art
+            artDiv.addEventListener('mouseenter', () => {
+                const imgUrl = artDiv.dataset.img;
+                if (previewBg) {
+                    previewBg.src = imgUrl;
+                    previewBg.style.opacity = '0.15';
+                    playBleep('F#2', '32n'); // Glitch sound
+                }
+            });
+            artDiv.addEventListener('mouseleave', () => {
+                if (previewBg) previewBg.style.opacity = '0';
+            });
+
+            landingIndexContainer.appendChild(artDiv);
             showLandingPage();
         }
-
+ 
         function renderProducts(products) {
             const container = document.getElementById('product-grid');
             if (!container) return;
@@ -1882,12 +2114,12 @@
 
         function showProductGrid(mainCategory = 'all') {
             console.log(mainCategory);
-            currentZone=mainCategory;
+            currentZone = mainCategory;
             // 每次切換專區時，重置篩選器
             activeFilters = { character: null, type: null };
             updateFilterBtnStyles();
             setupFilterBar(currentZone);
-            
+
             playBleep('A4', '64n');
             const mainTitle = document.getElementById('main-title');
             if (mainTitle) {
@@ -1899,19 +2131,26 @@
             document.getElementById('landing-view').classList.add('hidden');
             document.getElementById('product-detail-view').classList.add('hidden');
             document.getElementById('product-grid-container').classList.remove('hidden');
-            
+            // Hide Work View
+            const workView = document.getElementById('work-view');
+            if (workView) workView.classList.add('hidden');
+
             // 重要：切換到新的 applyFilters
-            applyFilters(); 
+            applyFilters();
         }
 
         function showLandingPage() {
             document.getElementById('product-grid-container').classList.add('hidden');
             document.getElementById('product-detail-view').classList.add('hidden');
+            // Hide Work View
+            const workView = document.getElementById('work-view');
+            if (workView) workView.classList.add('hidden');
+
             document.getElementById('landing-view').classList.remove('hidden');
             const mainTitle = document.getElementById('main-title');
             if (mainTitle) {
-                mainTitle.removeAttribute('style'); 
-                mainTitle.textContent = "【 // CURATED ARCHIVE 】"; 
+                mainTitle.removeAttribute('style');
+                mainTitle.textContent = "【 // CURATED ARCHIVE 】";
                 mainTitle.style.color = '#000';
             }
         }
@@ -1996,13 +2235,13 @@
                 // A. Zone Filter (Hard Filter)
                 // 如果是 'all' (例如從詳情頁返回)，則顯示所有，否則嚴格比對品牌
                 let zoneMatch = (currentZone === 'all') || brand.includes(currentZone);
-                if (!zoneMatch) return false; 
-                
+                if (!zoneMatch) return false;
+
                 // B. Character Filter
                 if (activeFilters.character) {
                     if (!tags.includes(activeFilters.character) && !name.includes(activeFilters.character)) return false;
                 }
-                  
+
                 // C. Type Filter
                 if (activeFilters.type) {
                     const k = activeFilters.type;
@@ -2015,7 +2254,7 @@
 
             // Update UI Count
             console.log("Filtered Items Count:", filtered.length);
-            renderProducts(filtered); 
+            renderProducts(filtered);
         }
 
         function clearSubFilters() {

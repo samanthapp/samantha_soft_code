@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.11/addons/p5.sound.min.js"></script>
+
+    <script>/*
+      Project: GOOD NIGHT
+      Concept: Inverted Sunset & Settling Dust.
+      Music Ref: "Good Night, Day"
+      Emotion: Finding home, Anxiety settling into peace.
+    */
+    
+    let particles = [];
+    let numParticles = 350; // 粒子數量
+    
+    // 京都黃昏漸層 (Kyoto Twilight Gradient)
+    let colorNightSky;
+    let colorCityLight;
+    let colorGlow; 
+    
+    function setup() {
+      createCanvas(windowWidth, windowHeight);
+      
+      // 色票定義
+      // 上方：深邃的午夜藍 (Midnight Blue)
+      colorNightSky = color('#09101C'); 
+      // 下方：微弱的暖金，像遠處的燈火或餘暉 (Muted Gold/Warm Earth)
+      colorCityLight = color('#3D3425'); 
+      
+      // 粒子顏色：燈籠的光，溫暖的琥珀色
+      colorGlow = color('#FFD180'); 
+    
+      // 初始化粒子
+      for (let i = 0; i < numParticles; i++) {
+        particles.push(new Snowflake());
+      }
+    }
+    
+    function draw() {
+      // 1. 繪製背景漸層 (Inverted Sunset)
+      // 從上到下，由深藍過渡到暖濁色
+      drawGradient(colorNightSky, colorCityLight);
+    
+      // 2. 開啟發光模式
+      blendMode(ADD);
+    
+      // 3. 更新粒子
+      let t = frameCount * 0.003; // 時間流逝
+      
+      for (let p of particles) {
+        p.update(t);
+        p.display();
+      }
+      
+      // 畫完後切回正常混合模式，以免影響下一次背景繪製
+      blendMode(BLEND);
+    }
+    
+    // 繪製線性漸層的輔助函式
+    function drawGradient(c1, c2) {
+      noFill();
+      for (let y = 0; y < height; y++) {
+        let inter = map(y, 0, height, 0, 1);
+        let c = lerpColor(c1, c2, inter);
+        stroke(c);
+        line(0, y, width, y);
+      }
+    }
+    
+    class Snowflake {
+      constructor() {
+        this.reset();
+        // 讓初始畫面已經有一些粒子落在地上了，不需要等待
+        this.pos.y = random(height); 
+        if (this.pos.y > height - 100) this.landed = true;
+      }
+    
+      reset() {
+        this.pos = createVector(random(width), random(-100, -10)); // 從螢幕上方生成
+        this.vel = createVector(0, 0);
+        this.size = random(2, 4.5);
+        
+        // 每個粒子有一個「預定降落點」
+        // 不會全部落在同一條線上，而是堆積在底部，形成厚度
+        this.landY = height - random(0, 80); 
+        this.landed = false; // 是否已經著陸
+        
+        // 飄落速度 (不同粒子重力不同)
+        this.fallSpeed = random(0.5, 1.5);
+        
+        // 呼吸頻率
+        this.alphaOffset = random(100);
+      }
+    
+      update(t) {
+        if (!this.landed) {
+          // --- A. 飄落狀態 (Falling) ---
+          
+          // 1. 水平搖曳：模擬像雪花或灰塵的空氣阻力
+          let windX = map(noise(this.pos.x * 0.01, this.pos.y * 0.01, t), 0, 1, -1, 1);
+          this.pos.x += windX;
+    
+          // 2. 垂直沉降
+          this.pos.y += this.fallSpeed;
+    
+          // 3. 檢查是否觸底 (安頓)
+          // 當粒子接近它的預定著陸點時
+          if (this.pos.y >= this.landY) {
+            this.landed = true;
+          }
+    
+          // 互動：滑鼠像是一盞燈，會稍微吸引還在飄的粒子
+          let d = dist(mouseX, mouseY, this.pos.x, this.pos.y);
+          if (d < 150) {
+            let attraction = createVector(mouseX - this.pos.x, mouseY - this.pos.y);
+            attraction.normalize();
+            attraction.mult(0.05); // 微弱的引力
+            this.pos.add(attraction);
+          }
+    
+        } else {
+          // --- B. 安頓狀態 (Settled) ---
+          // 粒子變成了地毯的一部分
+          // 讓它非常緩慢地左右蠕動一點點，像呼吸一樣，證明它還活著
+          this.pos.x += map(noise(t * 2 + this.pos.y), 0, 1, -0.1, 0.1);
+          
+          // 偶爾重置粒子 (輪迴)，讓天上永遠有東西在掉，地上也不會堆太滿
+          // 機率極低，讓畫面保持寧靜
+          if (random(1) < 0.002) {
+            this.reset();
+          }
+        }
+      }
+    
+      display() {
+        noStroke();
+        
+        // 計算透明度：模擬燭光的閃爍感
+        let flicker = map(sin(frameCount * 0.05 + this.alphaOffset), -1, 1, 100, 200);
+        
+        // 如果已經著陸，透明度稍微低一點，讓它融入背景
+        let finalAlpha = this.landed ? flicker * 0.6 : flicker;
+        
+        // 顏色：暖金
+        fill(red(colorGlow), green(colorGlow), blue(colorGlow), finalAlpha);
+        
+        // 繪製
+        circle(this.pos.x, this.pos.y, this.size);
+        
+        // 為了加強「光暈感」，再畫一層更淡的大圈
+        fill(red(colorGlow), green(colorGlow), blue(colorGlow), finalAlpha * 0.3);
+        circle(this.pos.x, this.pos.y, this.size * 2);
+      }
+    }
+    
+    function windowResized() {
+      resizeCanvas(windowWidth, windowHeight);
+      // 不需要重置粒子，保留當下的氛圍
+    }</script>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+
+</head>
+
+<body>
+    <main>
+    </main>
+</body>
+
+</html>

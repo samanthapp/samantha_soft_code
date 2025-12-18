@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.11/addons/p5.sound.min.js"></script>
+
+    <script>// Kyoto Data Breath v2.2: Responsive Zen (RWD)
+        // 核心改動：加入 scaleFactor 計算，適應手機與大螢幕
+
+        let rockGroups = [];
+        let seed;
+        let timeSpeed = 0.003;
+        let waveSpeed = 0.01;
+        let scl = 1; // [RWD 關鍵] 縮放係數
+
+        // --- 色票 (Light Concrete) ---
+        let colorAkane = "#C9382E";
+        let colorSabi = "#8C8C8C";
+        let colorKoke = "#737A62";
+        let colorSumi = "#1A1A1A";
+        let colorGofun = "#C0C0C0";
+
+        function setup() {
+            // 1. [RWD] 使用視窗寬高建立畫布
+            createCanvas(windowWidth, windowHeight);
+
+            // 2. [RWD] 計算縮放係數
+            // 以 1000px 寬度為基準 (基準值可隨意調整)
+            // 如果螢幕只有 500px 寬，scl 就會變成 0.5，所有東西縮小一半
+            scl = min(width, height) / 800;
+
+            seed = random(1000);
+            noStroke();
+
+            initRocks(); // 將生成石頭的邏輯拉出來，方便重置
+        }
+
+        function draw() {
+            randomSeed(seed);
+            drawConcreteWall();
+            drawDataWaves();
+
+            for (let group of rockGroups) {
+                for (let rock of group.rocks) {
+                    drawNaturalMoss(rock);
+                    drawRockBody(rock);
+                }
+            }
+        }
+
+        // 3. [RWD] 監聽視窗大小改變
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            // 重新計算縮放係數
+            scl = min(width, height) / 800;
+            // 因為版面變了，必須重新生成石頭位置，不然會跑版
+            initRocks();
+        }
+
+        // --- 邏輯模組 ---
+
+        function initRocks() {
+            rockGroups = [];
+            let attempts = 0;
+            // 手機版石頭少一點(2組)，桌機版多一點(3-4組)
+            let maxGroups = width < 600 ? 2 : 4;
+
+            while (rockGroups.length < maxGroups && attempts < 1000) {
+                // 讓石頭生成在畫面中間 80% 的區域，避免貼邊
+                let gX = random(width * 0.1, width * 0.9);
+                let gY = random(height * 0.2, height * 0.8);
+
+                let overlap = false;
+                for (let g of rockGroups) {
+                    // 距離判斷也要乘上 scl，確保在小螢幕上不會擠在一起
+                    if (dist(gX, gY, g.x, g.y) < 250 * scl) { overlap = true; break; }
+                }
+                if (!overlap) {
+                    rockGroups.push(createRockGroup(gX, gY));
+                }
+                attempts++;
+            }
+        }
+
+        function drawConcreteWall() {
+            let age = (sin(frameCount * timeSpeed) + 1) / 2;
+            //let freshColor = color("#E8E8E6"); 
+            //let agedColor  = color("#A0A09D"); 
+
+            // Fresh: 乾燥的水泥灰 (Light Concrete)
+            let freshColor = color("#8C8C8C");
+            // Aged: 濕潤的深灰褐 (Wet Greige / Rick Owens Grey)
+            let agedColor = color("#3A3836"); // 您指定的色碼
+            let baseCol = lerpColor(freshColor, agedColor, age);
+            background(baseCol);
+
+            fill(50, 20);
+            // 紋理間距也隨 scl 縮放
+            for (let y = 0; y < height; y += 3 * scl) {
+                let grain = noise(y * 0.5, frameCount * 0.001);
+                if (grain > 0.4 && grain < 0.6) {
+                    rect(random(width), y, random(10, 50) * scl, 1 * scl);
+                }
+            }
+
+            if (age > 0.2) {
+                fill(80, (age - 0.2) * 25);
+                let stainSeed = 999;
+                for (let i = 0; i < 8; i++) {
+                    let ox = noise(i, stainSeed) * width;
+                    let oy = noise(i + 20, stainSeed) * height;
+                    let ow = noise(i + 40) * 400 * scl; // 暈染大小隨 scl 縮放
+                    ellipse(ox, oy, ow, ow * 0.8);
+                    ellipse(ox, oy, ow * 0.7, ow * 0.5);
+                }
+            }
+        }
+
+        function drawDataWaves() {
+            for (let i = 0; i < 4; i++) {
+                drawBreathingLine(i);
+            }
+        }
+
+        function drawBreathingLine(index) {
+            // 波浪高度根據螢幕高度百分比分佈
+            let yBase = height * 0.25 + index * (height * 0.15);
+
+            let colA = color(colorAkane);
+            let colB = color(colorKoke);
+            let lineCol = lerpColor(colB, colA, index / 3.0);
+
+            let step = 6 * scl; // 粒子間距隨縮放調整
+
+            for (let x = 0; x < width; x += step) {
+                let n = noise(x * 0.005 / scl, frameCount * waveSpeed + index * 100);
+                let amplitude = map(n, 0, 1, -50 * scl, 50 * scl); // 振幅隨縮放調整
+
+                let d = dist(x, yBase, mouseX, mouseY);
+                let mouseInfluence = 0;
+                if (d < 150 * scl) {
+                    mouseInfluence = map(d, 0, 150 * scl, 60 * scl, 0);
+                    amplitude += sin(x * 0.1 + frameCount * 0.5) * mouseInfluence;
+                }
+
+                let y = yBase + amplitude;
+
+                let pCol = lerpColor(lineCol, color(colorGofun), random(0.1));
+                fill(pCol);
+
+                let jitter = (index == 3) ? random(-3, 3) : random(-1, 1);
+                let pSize = (index == 3) ? random(1, 3) : random(2, 5);
+
+                // 粒子大小也要乘上 scl
+                pSize *= scl;
+                jitter *= scl;
+
+                if (mouseInfluence > 0) {
+                    jitter += random(-mouseInfluence / 5, mouseInfluence / 5);
+                }
+
+                if (index < 2) {
+                    rect(x, y + jitter, pSize, pSize * 0.6);
+                } else {
+                    ellipse(x, y + jitter, pSize, pSize);
+                }
+
+                if (random() < 0.005 + (mouseInfluence * 0.001)) {
+                    fill(pCol);
+                    let floatY = y - random(10, 60) * scl;
+                    let floatSize = pSize * 0.5;
+                    ellipse(x, floatY, floatSize, floatSize);
+                }
+            }
+        }
+
+        function createRockGroup(cx, cy) {
+            let rocks = [];
+            // 石頭大小乘上 scl
+            let mainR = random(40, 60) * scl;
+            rocks.push(createRock(cx, cy, mainR));
+
+            let subR = random(20, 35) * scl;
+            let ang = random(TWO_PI);
+            let sx = cx + cos(ang) * (mainR + subR) * 0.6;
+            let sy = cy + sin(ang) * (mainR + subR) * 0.5;
+            rocks.push(createRock(sx, sy, subR));
+
+            return { rocks: rocks };
+        }
+
+        function createRock(x, y, r) {
+            let mossParticles = [];
+            // 粒子數量不變，但分佈範圍隨 r (已縮放) 改變
+            for (let i = 0; i < r / scl * 12; i++) {
+                let ang = random(TWO_PI);
+                let dist = randomGaussian(r, r * 0.1);
+                let mx = x + cos(ang) * dist;
+                let my = y + sin(ang) * dist * 0.7;
+                // 苔蘚粒子大小也要縮放
+                mossParticles.push({ x: mx, y: my, sz: random(1, 4) * scl, c: random([colorKoke, "#5A6352"]) });
+            }
+            return { x, y, r, moss: mossParticles, seed: random(1000) };
+        }
+
+        function drawNaturalMoss(rock) {
+            for (let m of rock.moss) {
+                fill(m.c);
+                let alpha = 180 + sin(frameCount * 0.05 + m.x) * 50;
+                fill(red(m.c), green(m.c), blue(m.c), alpha);
+                ellipse(m.x, m.y, m.sz, m.sz);
+            }
+        }
+
+        // --- 核心修改區塊 ---
+
+        function drawRockBody(rock) {
+            push();
+            translate(rock.x, rock.y);
+            fill(colorSumi);
+
+            drawingContext.shadowBlur = 40 * scl;
+            drawingContext.shadowColor = 'rgba(0,0,0,0.5)';
+
+            beginShape();
+            // [修改 1] 增加解析度：將間隔從 0.2 改為 0.05，線條更細緻平滑
+            let angleStep = 0.05;
+
+            for (let a = 0; a < TWO_PI; a += angleStep) {
+
+                // [修改 2] 雙層雜訊疊加法 (Layered Noise)
+
+                // --- 第一層：主輪廓 (大起伏) ---
+                // 輸入乘數較小 (1.5)，變化較緩慢，決定石頭基本形狀
+                // 使用 rock.seed 確保每顆石頭形狀不同
+                let n1 = noise(cos(a) * 1.5 + rock.seed, sin(a) * 1.5 + rock.seed);
+                // 偏移量較大 (rock.r * 0.2 ~ 0.3)
+                let offset1 = map(n1, 0, 1, -rock.r * 0.2, rock.r * 0.3);
+
+                // --- 第二層：表面質感 (細顆粒) ---
+                // 輸入乘數較大 (5.0)，變化快，產生粗糙感
+                // +100 是為了錯開雜訊空間，不要跟第一層重複
+                let n2 = noise(cos(a) * 5.0 + rock.seed + 100, sin(a) * 5.0 + rock.seed + 100);
+                // 偏移量很小 (rock.r * 0.05)，只是表面的微小凹凸
+                let offset2 = map(n2, 0, 1, -rock.r * 0.05, rock.r * 0.05);
+
+                // 最終半徑 = 基礎半徑 + 主輪廓偏移 + 表面質感偏移
+                let finalR = rock.r + offset1 + offset2;
+
+                // 應用透視壓扁 (y * 0.7)
+                vertex(finalR * cos(a), finalR * sin(a) * 0.7);
+            }
+            endShape(CLOSE);
+            pop();
+        }
+
+        // --- 核心修改結束 ---
+        function mousePressed() {
+            seed = random(1000);
+            initRocks();
+        }</script>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+
+</head>
+
+<body>
+    <main>
+    </main>
+</body>
+
+</html>

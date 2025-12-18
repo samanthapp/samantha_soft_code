@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.11/addons/p5.sound.min.js"></script>
+
+    <script>/*
+        Title: Flight from the City
+        Concept: Ascending, Release, Lightness.
+        Palette: Shoji White (Background) & Floating Gold (Particles).
+        Audio Feel: Ethereal, Piano, Repetitive but calming.
+      */
+      
+      let particles = [];
+      let numParticles = 400; // 粒子數量，代表釋放出的記憶碎片
+      let flowField;
+      
+      // 色票 Palette
+      let bgCol;
+      let goldColors = [];
+      
+      function setup() {
+        createCanvas(windowWidth, windowHeight);
+        
+        // 背景：京都障子門的米白 (Shoji Screen / Rice Paper)
+        bgCol = color('#F9F7F2'); 
+        
+        // 金色系：從深沈的古銅金到明亮的陽光金
+        // 呼應「黃金已出渠」，光芒是流動且多層次的
+        goldColors = [
+          color('#D4AF37'), // Metallic Gold
+          color('#C5A059'), // Muted Antique Gold
+          color('#FFD700'), // Bright Yellow Gold
+          color('#FFF8DC')  // Cornsilk (Highlight)
+        ];
+      
+        // 初始化粒子
+        for (let i = 0; i < numParticles; i++) {
+          particles.push(new LightParticle());
+        }
+      }
+      
+      function draw() {
+        // 每一幀都重畫背景，但給一點點透明度，創造極其微弱的「光暈殘影」
+        // 不同於 Harm 的深沈拖影，這裡是為了讓金色看起來有柔光
+        noStroke();
+        fill(red(bgCol), green(bgCol), blue(bgCol), 80); 
+        rect(0, 0, width, height);
+      
+        // 時間變數，用於驅動雜訊風場
+        let t = frameCount * 0.002;
+      
+        for (let p of particles) {
+          p.update(t);
+          p.display();
+        }
+      }
+      
+      class LightParticle {
+        constructor() {
+          this.reset(true); // true 代表隨機分佈在整個畫面（初始狀態）
+        }
+      
+        reset(startRandomY = false) {
+          this.pos = createVector(random(width), startRandomY ? random(height) : height + 20);
+          this.vel = createVector(0, 0);
+          this.acc = createVector(0, 0);
+          
+          // 每個粒子的「浮力」不同，有些輕盈飛得快，有些緩慢
+          this.maxSpeed = random(0.5, 2.5);
+          
+          // 粒子大小：有些是大氣泡，有些是微塵
+          this.size = random(2, 6);
+          
+          // 隨機選一種金色
+          this.baseColor = random(goldColors);
+          
+          // 呼吸頻率：讓光芒閃爍
+          this.blinkOffset = random(100); 
+          this.blinkSpeed = random(0.02, 0.05);
+        }
+      
+        update(t) {
+          // --- 1. 動態邏輯：氣流場 (Wind Field) ---
+          // 使用 Perlin Noise 模擬熱氣流，粒子不只是直直往上，而是隨風搖曳
+          // x 的變化比較大 (左右飄)，y 的變化主要受浮力影響
+          
+          let noiseVal = noise(this.pos.x * 0.005, this.pos.y * 0.005, t);
+          let windAngle = map(noiseVal, 0, 1, -PI / 3, PI / 3); // 左右 -60 到 60 度的風
+          
+          let wind = p5.Vector.fromAngle(windAngle - PI / 2); // 主要是向上 (-PI/2) 的趨勢
+          wind.mult(0.05); // 風力大小
+          
+          this.acc.add(wind);
+          
+          // 加上恆定的上升浮力 (Ascending Force)
+          this.acc.add(0, -0.02); 
+      
+          // --- 2. 互動：指尖的氣旋 ---
+          // 當手滑過時，不是推開，而是給予一點點旋轉的能量 (Turbalance)
+          let mouse = createVector(mouseX, mouseY);
+          let d = p5.Vector.dist(mouse, this.pos);
+          if (d < 150) {
+             // 讓滑鼠附近的粒子稍微加速上升，像是指尖帶起了風
+             this.acc.add(0, -0.1); 
+             // 微微向滑鼠靠攏 (吸引力)，象徵「嚮往自由」
+             let attract = p5.Vector.sub(mouse, this.pos);
+             attract.normalize();
+             attract.mult(0.02);
+             this.acc.add(attract);
+          }
+      
+          // --- 3. 物理更新 ---
+          this.vel.add(this.acc);
+          this.vel.limit(this.maxSpeed);
+          this.pos.add(this.vel);
+          this.acc.mult(0);
+      
+          // --- 4. 邊界檢查 ---
+          // 如果飛出頂部，就在底部重生 (循環)
+          if (this.pos.y < -10) {
+            this.reset(false); // false 代表從最底部重生
+          }
+          // 左右邊界循環
+          if (this.pos.x > width) this.pos.x = 0;
+          if (this.pos.x < 0) this.pos.x = width;
+        }
+      
+        display() {
+          // --- 呼吸效果 ---
+          // 計算透明度 alpha，讓它像是在呼吸或閃爍
+          let alphaNoise = sin(frameCount * this.blinkSpeed + this.blinkOffset);
+          let alpha = map(alphaNoise, -1, 1, 100, 255); // 透明度在 100~255 之間波動
+      
+          noStroke();
+          fill(red(this.baseColor), green(this.baseColor), blue(this.baseColor), alpha);
+          
+          // 繪製圓形粒子
+          ellipse(this.pos.x, this.pos.y, this.size);
+          
+          // 加一點點光暈 (畫一個更大的、透明度更低的圓在同位置)
+          fill(red(this.baseColor), green(this.baseColor), blue(this.baseColor), alpha * 0.3);
+          ellipse(this.pos.x, this.pos.y, this.size * 2);
+        }
+      }
+      
+      function windowResized() {
+        resizeCanvas(windowWidth, windowHeight);
+        setup();
+      }</script>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+
+</head>
+
+<body>
+    <main>
+    </main>
+</body>
+
+</html>

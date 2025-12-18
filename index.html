@@ -133,7 +133,16 @@
                 opacity: 0;
             }
         }
-
+        /* NEW: Cursor Blink Animation for File List */
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        .animate-blink-cursor {
+            animation: blink 1s step-end infinite;
+            color: var(--accent); /* Red cursor */
+            font-weight: bold;
+        }
         /* --- 2. Main Site Wrapper --- */
         #site-wrapper {
             opacity: 0;
@@ -1864,22 +1873,40 @@
                 mainTitle.classList.add('hidden');
             }
         }
-
         function renderArtworkList() {
             const listContainer = document.getElementById('art-file-list');
             if (!listContainer) return;
             listContainer.innerHTML = '';
 
             artworks.forEach((art, index) => {
+                const isActive = index === currentArtIndex;
                 const btn = document.createElement('button');
-                btn.className = `text-left font-mono text-xs py-2 px-3 border border-transparent hover:border-black hover:bg-white hover:text-black transition flex justify-between items-center group w-full ${index === currentArtIndex ? 'bg-black text-white' : 'text-gray-600'}`;
+                
+                // Style calculation
+                let baseClass = "text-left font-mono text-xs py-2 px-3 border border-transparent hover:border-black hover:bg-white hover:text-black transition flex justify-between items-center group w-full";
+                let activeClass = isActive ? "bg-black text-white" : "text-gray-600";
+                
+                btn.className = `${baseClass} ${activeClass}`;
                 btn.onclick = () => loadArtwork(index);
                 
-                const indicator = index === currentArtIndex ? '●' : '○';
+                // Prefix logic
+                let prefixHTML = '';
+                if (isActive) {
+                    // Active: Blinking cursor >_
+                    prefixHTML = `<span class="animate-blink-cursor mr-2">&gt;_</span>`;
+                } else {
+                    // Inactive: Simple circle
+                    prefixHTML = `<span class="mr-2 opacity-50">○</span>`;
+                }
                 
                 btn.innerHTML = `
-                    <span>${indicator} ${art.id}</span>
-                    <span class="opacity-50 group-hover:opacity-100 text-[10px] uppercase tracking-tighter hidden md:inline-block">${art.title.split('(')[0]}</span>
+                    <span class="flex items-center">
+                        ${prefixHTML}
+                        <span>${art.id}</span>
+                    </span>
+                    <span class="opacity-50 group-hover:opacity-100 text-[10px] uppercase tracking-tighter hidden md:inline-block">
+                        ${art.title.split('(')[0]}
+                    </span>
                 `;
                 listContainer.appendChild(btn);
             });

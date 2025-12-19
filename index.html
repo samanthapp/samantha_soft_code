@@ -836,10 +836,66 @@
             <!-- 修正結構：w-full + justify-between -->
             <nav class="flex justify-between items-center w-full relative h-16">
                 <!-- LOGO (永遠在左) - 改用 SVG 圖片引用模式 -->
-                <a href="#" class="hacker-logo z-50 flex items-center text-black hover:text-[#FF3333] transition-colors"
-                    onclick="showLandingPage()">
-                    <!-- Replace content of d="" with your actual logo.svg path data -->
-                    <img src="logo.svg" alt="SAMANTHA LOGO" class="w-auto object-contain" />
+                 <!-- LOGO (永遠在左) - 改用 SVG 圖片引用模式 -->
+                 <a href="#" class="hacker-logo z-50 flex items-center text-black hover:text-[#FF3333] transition-colors" onclick="showLandingPage()">
+                    <!-- 改裝後的 Inline SVG -->
+                    <!-- viewBox="0 200 600 200" 是為了裁切掉原本 SVG 上下多餘的空白，讓文字自動放大填滿 -->
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 200 600 200" class="w-auto h-20 md:h-24 -ml-4 md:-ml-6 relative top-1">
+                      <defs>
+                        <style>
+                          /* 呼吸動畫 */
+                          @keyframes breathe-line {
+                            0%, 100% { opacity: 0.3; transform: scaleX(0.8); }
+                            50% { opacity: 1; transform: scaleX(1); }
+                          }
+                       
+                          .brand-text {
+                            font-family: 'Inter', sans-serif;
+                            font-weight: 900;
+                            font-size: 56px;
+                            letter-spacing: 0.1em;
+                            fill: currentColor; /* 關鍵：使用 currentColor 讓它跟隨 Tailwind 的 hover:text-red */
+                            text-anchor: middle;
+                            text-transform: uppercase;
+                          }
+                       
+                          .code-text {
+                            font-family: 'Space Mono', monospace;
+                            font-weight: 600;
+                            font-size: 24px;
+                            letter-spacing: 0.15em;
+                            fill: currentColor; /* 關鍵：跟隨父層顏色 */
+                            text-anchor: middle;
+                            opacity: 0.7;
+                          }
+                       
+                          .bracket {
+                            fill: currentColor;
+                            font-weight: 700;
+                          }
+                       
+                          .glitch-line {
+                            fill: #FF3333; /* 這條線維持紅色，不隨 hover 變色，作為點綴 */
+                            transform-box: fill-box;
+                            transform-origin: center;
+                            animation: breathe-line 4s ease-in-out infinite;
+                          }
+                        </style>
+                      </defs>
+                       
+                      <!-- 1. 主標題 (位置微調以適應新的 viewBox) -->
+                      <text x="50%" y="280" class="brand-text">SAMANTHA</text>
+                       
+                      <!-- 2. 副標題 -->
+                      <g transform="translate(300, 320)"> <!-- 移到水平中心 -->
+                        <text x="0" y="0" class="code-text">
+                          <tspan class="bracket">[</tspan> SOFT_CODE <tspan class="bracket">]</tspan>
+                        </text>
+                         
+                        <!-- 3. 紅色呼吸底線 -->
+                        <rect x="-110" y="10" width="220" height="3" class="glitch-line" />
+                      </g>
+                    </svg>
                 </a>
 
                 <!-- Full Screen Navigation Overlay -->
@@ -850,21 +906,39 @@
                     </div>
                 </div>
 
-                <!-- 右側群組：功能按鈕 (永遠在右) -->
-                <div class="flex items-center space-x-4 z-50">
+                 <!-- 右側群組：功能按鈕 (永遠在右) -->
+                <!-- 修正：改成 SVG 圖示按鈕，文字在手機隱藏 -->
+                <div class="flex items-center gap-1.5 md:gap-2 z-50">
                     <!-- 購物車按鈕 -->
                     <button id="cart-toggle"
-                        class="text-xs font-mono uppercase border border-black px-2 py-1 transition duration-200 hover:bg-black hover:text-white text-black flex items-center gap-1">
-                        [ CART : <span id="cart-count">0</span> ]
+                        class="text-xs font-mono uppercase border border-black px-1.5 py-1.5 md:px-3 md:py-1 transition duration-200 hover:bg-black hover:text-white text-black flex items-center justify-center gap-2 whitespace-nowrap min-w-[36px] md:min-w-auto">
+                        <!-- Icon (Mobile Only or Always Visible depending on preference, here SVG) -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="md:hidden"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+                         
+                        <!-- Text (Hidden on Mobile) -->
+                        <span class="hidden md:!inline">[ CART : <span id="cart-count">0</span> ]</span>
+                         
+                        <!-- Count Badge for Mobile (Visible only on small screens) -->
+                        <span class="md:hidden text-[10px] font-bold" id="cart-count-mobile">0</span>
                     </button>
+
+                    <!-- 音效按鈕 -->
                     <button id="audio-toggle"
-                        class="text-xs font-mono uppercase border border-black px-2 py-1 transition duration-200 hover:bg-black hover:text-white text-black">
-                        [ AUDIO OFF ]
+                        class="text-xs font-mono uppercase border border-black px-1.5 py-1.5 md:px-3 md:py-1 transition duration-200 hover:bg-black hover:text-white text-black flex items-center justify-center whitespace-nowrap min-w-[36px] md:min-w-auto">
+                        <!-- Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="md:hidden"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                         
+                        <!-- Text -->
+                        <span class="hidden md:!inline">[ AUDIO OFF ]</span>
                     </button>
-                    <!-- 系統選單按鈕：取代原本的漢堡圖示 -->
-                    <button id="menu-toggle"
-                        class="text-xs font-mono font-bold cursor-pointer text-black border border-black px-2 py-1 hover:bg-black hover:text-white transition">
-                        [ SYSTEM_MENU ]
+
+                    <!-- 系統選單按鈕 -->
+                    <button id="menu-toggle" class="text-xs font-mono font-bold cursor-pointer text-black border border-black px-1.5 py-1.5 md:px-3 md:py-1 hover:bg-black hover:text-white transition whitespace-nowrap flex items-center justify-center min-w-[36px] md:min-w-auto">
+                        <!-- Icon -->
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="md:hidden"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                         
+                        <!-- Text -->
+                        <span class="hidden md:!inline">[ SYSTEM_MENU ]</span>
                     </button>
                 </div>
             </nav>
@@ -909,7 +983,7 @@
                         [ RETURN_TO_SAFE_MODE ]
                     </button>
                 </div>
-                
+                 
                 <!-- Content Container: Flex for desktop (row), col for mobile -->
                 <div class="flex-grow flex flex-col md:flex-row overflow-hidden">
                     <!-- P5.js Container -->
@@ -922,7 +996,7 @@
 
                     <!-- Creative Text Description Area -->
                     <div class="w-full md:w-1/3 h-1/2 md:h-full bg-[#FAF9F6] p-6 overflow-y-auto font-mono text-sm flex flex-col">
-                        
+                         
                         <!-- File Selector List -->
                         <div class="mb-8 border-b border-black pb-4">
                             <div class="text-xs text-gray-500 mb-2 font-bold tracking-widest">[ FILE_SYSTEM ]</div>
@@ -949,7 +1023,7 @@
                         </div>
                     </div>
                 </div>
-                
+                 
                 <!-- Footer -->
                 <div class="border-t border-black p-2 text-center font-mono text-xs text-gray-500 bg-[#FAF9F6] flex-shrink-0">
                     [ INTERACTIVE_MODE: ENABLED ]
@@ -972,13 +1046,13 @@
                     <span class="font-mono text-[10px] text-gray-400 w-16">TYPE ::</span>
                     <button onclick="toggleFilter('type', '吊飾')"
                         class="filter-btn px-3 py-1 text-xs rounded-full">吊飾/鑰匙圈</button>
-                    <button onclick="toggleFilter('type', '娃娃')"
+                    <button onclick="toggleFilter('type', '玩偶')"
                         class="filter-btn px-3 py-1 text-xs rounded-full">娃娃/玩偶</button>
                     <button onclick="toggleFilter('type', '收納')"
                         class="filter-btn px-3 py-1 text-xs rounded-full">收納/包袋</button>
                     <button onclick="toggleFilter('type', '文具')"
                         class="filter-btn px-3 py-1 text-xs rounded-full">文具/貼紙</button>
-                    <button onclick="toggleFilter('type', '生活')"
+                    <button onclick="toggleFilter('type', '雜貨')"
                         class="filter-btn px-3 py-1 text-xs rounded-full">生活/雜貨</button>
                 </div>
             </div>
@@ -1087,6 +1161,18 @@
         // 在 Google 表單「取得預填連結」中找到 &entry.xxxxxxx=...
         const ORDER_FIELD_ID = "entry.123456789";
 
+        // 3. 品牌與分類設定 (Brand JSON)
+        const BRAND_CONFIG = [
+            { brand: "內褲兔 (Opanchu)", major_category: "玩偶/玩具", sub_category: "玩偶" },
+            { brand: "三麗鷗 (Sanrio)", major_category: "玩偶/玩具", sub_category: "玩偶" },
+            { brand: "崔高興 (Choigosim)", major_category: "文具/辦公", sub_category: "貼紙" },
+            { brand: "Le Labo", major_category: "美妝/保養", sub_category: "香水" },
+            { brand: "Puppet Sunsun", major_category: "包袋/收納", sub_category: "購物袋" }
+        ];
+
+        // 預設首頁顯示的重點品牌
+        const FEATURED_BRANDS = ["內褲兔 (Opanchu)", "三麗鷗 (Sanrio)", "崔高興 (Choigosim)"];
+
         // ==========================================
         // PART 1: DATAMATICS PARTICLE ENGINE
         // ==========================================
@@ -1115,9 +1201,11 @@
         }
 
         function createTargetPixels() {
+            // GUARD CLAUSE FOR ZERO DIMENSIONS
+            if (!width || !height || width <= 0 || height <= 0) return [];
+
             const tempCanvas = document.createElement('canvas');
-            const tCtx = tempCanvas.getContext('2d');
-            tCtx.canvas.willReadFrequently = true;
+            const tCtx = tempCanvas.getContext('2d', { willReadFrequently: true });
             tempCanvas.width = width;
             tempCanvas.height = height;
 
@@ -1329,13 +1417,13 @@
         let isAudioOn = false;
         let masterGain = null;
         let allProducts = [];
-        let categoryData = {};
+        // let categoryData = {}; // 已由 BRAND_CONFIG 取代
         let currentZone = null; // '內褲兔' or '三麗鷗'
         let activeFilters = {
             character: null, // e.g., '酷洛米'
             type: null       // e.g., '娃娃'
         };
-        const featuredCategories = ["內褲兔 (Opanchu)", "三麗鷗 (Sanrio)", "塔麻可吉 (Tamagotchi)", "崔高興 (Choigosim)"];
+        // const featuredCategories = ...; // 已由 FEATURED_BRANDS 取代
 
         function playIkedaSnap() {
             if (Tone && Tone.context.state === 'running') {
@@ -1379,17 +1467,23 @@
             if (Tone.context.state !== 'running') Tone.start();
             const button = document.getElementById('audio-toggle');
             if (isAudioOn) {
-                button.textContent = '[ AUDIO OFF ]';
+                button.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="md:hidden"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>
+                    <span class="hidden md:!inline">[ AUDIO OFF ]</span>
+                `;
                 button.classList.remove('bg-black', 'text-white');
                 button.classList.add('text-black');
                 isAudioOn = false;
             } else {
-                button.textContent = '[ AUDIO ON ]';
+                button.innerHTML = `
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="md:hidden"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>
+                    <span class="hidden md:!inline">[ AUDIO ON ]</span>
+                `;
                 button.classList.add('bg-black', 'text-white');
                 button.classList.remove('text-black');
                 isAudioOn = true;
                 playBleep('G5', '32n');
-            }
+            } 
         }
 
         function playBleep(note = "C5", duration = "64n") {
@@ -1424,12 +1518,34 @@
             document.getElementById('intro-status').innerText = "_AUDIO_ENABLED_";
         });
 
-        async function fetchData() {
+        // Modified: fetchData now accepts parameters and a renderMode
+        // renderMode: 'auto' (default, handles routing) | 'manual' (just updates data)
+        async function fetchData(queryParams = {}, renderMode = 'auto') {
             try {
-                const response = await fetch('all_products_classified.json');
+                const apiParams = new URLSearchParams();
+
+                // Map 'id' to 'product_id'
+                if (queryParams.id) {
+                    apiParams.append('id', queryParams.id);
+                }
+                // Map 'cat' to 'major_category'
+                if (queryParams.cat) {
+                    apiParams.append('cat', queryParams.cat);
+                }
+                // Map 'q' to 'product_name'
+                if (queryParams.q) {
+                    apiParams.append('q', queryParams.q);
+                }
+
+                const baseUrl = 'https://product.cyberspacee.workers.dev';
+                const queryString = apiParams.toString();
+                const fetchUrl = queryString ? `${baseUrl}?${queryString}` : baseUrl;
+
+                // Explicitly use the requested URL with params
+                const response = await fetch(fetchUrl);
                 if (!response.ok) throw new Error("JSON Fetch Failed");
                 const jsonData = await response.json();
-                const processed = jsonData.map(item => {
+                const processed = jsonData.data.map(item => {
                     const prices = item.variations.map(v => v.price);
                     const minPrice = Math.min(...prices);
                     const maxPrice = Math.max(...prices);
@@ -1459,76 +1575,79 @@
                         brand: item.brand || [],
                     };
                 });
+                
                 allProducts = processed.sort((a, b) => b.product_id.localeCompare(a.product_id));
-                const categories = {};
-                processed.forEach(p => {
-                    if (!categories[p.category_main]) categories[p.category_main] = [];
-                    if (!categories[p.category_main].includes(p.category_sub)) {
-                        categories[p.category_main].push(p.category_sub);
+                // Note: categoryData logic removed as we use BRAND_CONFIG
+
+                // --- Mode Check ---
+                // If manual mode, we stop here (let the caller handle UI)
+                if (renderMode === 'manual') return;
+
+                // --- NEW: URL Parameter Handling Logic (Auto Mode) ---
+                // 1. Initialize Nav links regardless of view
+                renderNavigationLinks(); // Uses BRAND_CONFIG
+
+                // 2. Use passed queryParams for Routing Logic
+                const paramId = queryParams.id; 
+                const paramCat = queryParams.cat;
+                const paramQ = queryParams.q;
+
+                // 3. Routing Logic
+                if (paramId) {
+                    // CASE: ID Search -> Detail View
+                    const targetProduct = allProducts.find(p => p.product_id === paramId);
+                    if (targetProduct) {
+                        // Setup basic UI
+                        initApp(false); // false means don't force render landing page
+                        // Hide landing explicitly
+                        document.getElementById('landing-view').classList.add('hidden');
+                        // Show detail
+                        showProductDetail(paramId);
+                    } else {
+                        console.warn('Product ID not found, redirecting to home.');
+                        initApp();
                     }
-                });
-                Object.keys(categories).forEach(main => {
-                    categories[main].sort((a, b) => {
-                        if (a === '玩偶/玩具') return -1;
-                        if (b === '玩偶/玩具') return 1;
-                        return a.localeCompare(b);
-                    });
-                });
-                categoryData = categories;
-                initApp();
+                } else if (paramCat || paramQ) {
+                    // CASE: Category or Keyword Search -> Grid View
+                    initApp(false);
+                    document.getElementById('landing-view').classList.add('hidden');
+                    document.getElementById('product-detail-view').classList.add('hidden');
+                    document.getElementById('product-grid-container').classList.remove('hidden');
+
+                    let filteredResults = allProducts;
+                    let titleText = "SEARCH RESULTS";
+
+                    if (paramCat) {
+                        filteredResults = filteredResults.filter(p => p.category_sub.includes(paramCat));
+                        titleText = `CATEGORY: ${paramCat}`;
+                    }
+                    
+                    if (paramQ) {
+                        const lowerQ = paramQ.toLowerCase();
+                        filteredResults = filteredResults.filter(p => p.product_name.toLowerCase().includes(lowerQ));
+                        titleText = `SEARCH: "${paramQ}"`;
+                    }
+
+                    const mainTitle = document.getElementById('main-title');
+                    if(mainTitle) {
+                        mainTitle.textContent = titleText;
+                        mainTitle.classList.remove('hidden');
+                    }
+
+                    if (filteredResults.length === 0) {
+                        document.getElementById('empty-state').classList.remove('hidden');
+                        document.getElementById('product-grid').innerHTML = '';
+                    } else {
+                        renderProducts(filteredResults);
+                    }
+                } else {
+                    // CASE: No Params -> Default Landing Page
+                    initApp();
+                }
+
             } catch (err) {
-                console.warn("Using Fallback Data:", err);
-                const fallbackData = [
-                    {
-                        "product_id": "40176921182",
-                        "product_name": "全新可哀想? 內褲兔Opanchu 手掌大無奈小娃娃玩偶",
-                        "brand": "內褲兔 (Opanchu)",
-                        "major_category": "玩偶/玩具",
-                        "images": [
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztp-mhqbwgblghz5bf",
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztq-mhqbwg9nysjo56"
-                        ],
-                        "variations": [
-                            { "variation_name": "標準款", "price": 310.0, "stock": 1 }
-                        ]
-                    },
-                    {
-                        "product_id": "40276199056",
-                        "product_name": "全新 hello kitty 蘋果限定玩偶",
-                        "brand": "三麗鷗 (Sanrio)",
-                        "major_category": "玩偶/玩具",
-                        "images": [
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81ztl-mgr7cc6t79ceee",
-                            "https://s-cf-tw.shopeesz.com/file/tw-11134207-81zth-mgr7cc6t8nwua4"
-                        ],
-                        "variations": [
-                            { "variation_name": "手機吊飾", "price": 780.0, "stock": 1 },
-                            { "variation_name": "玩偶吊飾", "price": 780.0, "stock": 1 }
-                        ]
-                    },
-                ];
-                allProducts = fallbackData.map(item => {
-                    const prices = item.variations.map(v => v.price);
-                    const minPrice = Math.min(...prices);
-                    return {
-                        product_id: item.product_id,
-                        product_name: item.product_name,
-                        category_main: item.brand,
-                        category_sub: item.major_category,
-                        numericPrice: minPrice,
-                        displayPrice: `NT$ ${minPrice}`,
-                        primaryImage: item.images[0],
-                        secondImage: item.images[1] || item.images[0],
-                        images: item.images,
-                        variations: item.variations.map(v => ({
-                            variation_name: v.variation_name || '單一款式',
-                            price: v.price,
-                            stock: v.stock
-                        }))
-                    };
-                });
-                categoryData = { "內褲兔 (Opanchu)": ["玩偶/玩具"], "三麗鷗 (Sanrio)": ["玩偶/玩具"] };
-                initApp();
+                console.warn("Fetch Error:", err);
+                alert("System Error: Unable to fetch data.");
             }
         }
 
@@ -1713,7 +1832,7 @@
         // PART 4: APP LOGIC
         // ==========================================
 
-        function initApp() {
+        function initApp(renderLanding = true) {
             const logContainer = document.getElementById('system-log-container');
             if (logContainer) {
                 logContainer.innerHTML = `
@@ -1723,8 +1842,9 @@
                 `;
             }
 
-            renderNavigationLinks(categoryData);
-            renderLandingPage(categoryData);
+            if (renderLanding) {
+                renderLandingPage(); // Now uses global configs
+            }
 
             // New Menu Logic for Overlay
             const menuToggle = document.getElementById('menu-toggle');
@@ -1743,7 +1863,9 @@
             }
 
             const backToGrid = document.getElementById('back-to-grid');
-            if (backToGrid) backToGrid.addEventListener('click', () => showProductGrid('all'));
+            if (backToGrid) backToGrid.addEventListener('click', () => {
+                showProductGrid('all');
+            });
 
             const addToCartBtn = document.querySelector('.add-to-cart');
             if (addToCartBtn) {
@@ -1794,7 +1916,14 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            fetchData();
+            // Initial load: parse window URL parameters and pass to fetchData
+            const urlParams = new URLSearchParams(window.location.search);
+            const initialParams = {
+                id: urlParams.get('id'),
+                cat: urlParams.get('cat'),
+                q: urlParams.get('q')
+            };
+            fetchData(initialParams);
         });
 
         window.addEventListener('resize', () => {
@@ -1802,34 +1931,39 @@
             if (currentState !== STATE.END) initAnimation();
         });
 
-        function renderNavigationLinks(catData) {
+        function renderNavigationLinks() {
             const navLinksContainer = document.getElementById('nav-links-container');
             if (!navLinksContainer) return;
             navLinksContainer.innerHTML = '';
 
             // Add Home Link
             const homeLink = document.createElement('a');
-            homeLink.href = '#';
+            homeLink.href = 'index.html'; 
             homeLink.textContent = "00 // HOME_BASE";
             homeLink.onclick = (e) => {
                 e.preventDefault();
                 playBleep('G4', '64n');
-                showLandingPage();
-                document.getElementById('nav-overlay').classList.remove('active');
+                window.location.href = window.location.pathname; // Clear query params
             };
             navLinksContainer.appendChild(homeLink);
 
+            // Extract unique brands from BRAND_CONFIG
+            const uniqueBrands = [...new Set(BRAND_CONFIG.map(item => item.brand))];
+
             let counter = 1;
-            Object.keys(catData).forEach(mainCategory => {
+            uniqueBrands.forEach(brand => {
                 const link = document.createElement('a');
                 link.href = '#';
-                // Add leading zero
                 const num = counter < 10 ? `0${counter}` : counter;
-                link.textContent = `${num} // ${mainCategory.toUpperCase()}`;
+                
+                // Display simplification: "內褲兔 (Opanchu)" -> "內褲兔" for menu if desired, 
+                // but keeping full name is safer for matching.
+                link.textContent = `${num} // ${brand}`;
+                
                 link.onclick = (e) => {
                     e.preventDefault();
                     playBleep('G4', '64n');
-                    showProductGrid(mainCategory);
+                    showProductGrid(brand);
                     document.getElementById('nav-overlay').classList.remove('active');
                 };
                 navLinksContainer.appendChild(link);
@@ -1869,7 +2003,7 @@
             document.getElementById('landing-view').classList.add('hidden');
             document.getElementById('product-grid-container').classList.add('hidden');
             document.getElementById('product-detail-view').classList.add('hidden');
-            
+             
             const workView = document.getElementById('work-view');
             if(workView) {
                 workView.classList.remove('hidden');
@@ -1877,7 +2011,7 @@
                 renderArtworkList();
                 loadArtwork(0); 
             }
-            
+             
             const mainTitle = document.getElementById('main-title');
             if (mainTitle) {
                 mainTitle.classList.add('hidden');
@@ -1891,14 +2025,14 @@
             artworks.forEach((art, index) => {
                 const isActive = index === currentArtIndex;
                 const btn = document.createElement('button');
-                
+                 
                 // Style calculation
                 let baseClass = "text-left font-mono text-xs py-2 px-3 border border-transparent hover:border-black hover:bg-white hover:text-black transition flex justify-between items-center group w-full";
                 let activeClass = isActive ? "bg-black text-white" : "text-gray-600";
-                
+                 
                 btn.className = `${baseClass} ${activeClass}`;
                 btn.onclick = () => loadArtwork(index);
-                
+                 
                 // Prefix logic
                 let prefixHTML = '';
                 if (isActive) {
@@ -1908,7 +2042,7 @@
                     // Inactive: Simple circle
                     prefixHTML = `<span class="mr-2 opacity-50">○</span>`;
                 }
-                
+                 
                 btn.innerHTML = `
                     <span class="flex items-center">
                         ${prefixHTML}
@@ -1924,10 +2058,10 @@
 
         function loadArtwork(index) {
             if (index < 0 || index >= artworks.length) return;
-            
+             
             currentArtIndex = index;
             const art = artworks[index];
-            
+             
             // 1. 更新 iframe
             const iframe = document.getElementById('art-frame');
             if (iframe) {
@@ -1937,9 +2071,9 @@
                     // 為了模擬載入感，先顯示 Loading，再載入 iframe
                     const loadingText = document.getElementById('p5-loading');
                     if(loadingText) loadingText.style.display = 'flex';
-                    
+                     
                     iframe.src = art.src;
-                    
+                     
                     iframe.onload = () => {
                         if(loadingText) loadingText.style.display = 'none';
                     };
@@ -1953,11 +2087,11 @@
 
             // 3. 更新列表按鈕狀態 (重繪列表最簡單)
             renderArtworkList();
-            
+             
             // 4. 音效
             playBleep('A3', '32n');
         }
-        function renderLandingPage(catData) {
+        function renderLandingPage() {
             const landingIndexContainer = document.getElementById('data-index');
             const previewBg = document.getElementById('index-preview-bg');
             if (!landingIndexContainer) return;
@@ -1968,9 +2102,11 @@
             landingIndexContainer.innerHTML = '';
             if (bgElement) landingIndexContainer.appendChild(bgElement);
 
-            const categoriesToRender = Object.keys(catData).filter(cat => featuredCategories.includes(cat));
+            // Filter brands based on FEATURED_BRANDS
+            const categoriesToRender = FEATURED_BRANDS;
 
             categoriesToRender.forEach((mainCategory, index) => {
+                // Try to find a cover image from loaded products, fallback if not found
                 const firstProduct = allProducts.find(p => p.category_main === mainCategory && p.category_sub === "玩偶/玩具");
                 const coverImage = firstProduct ? firstProduct.primaryImage : 'https://placehold.co/800x600/BBBBBB/333333?text=Category';
 
@@ -2032,7 +2168,6 @@
             });
 
             landingIndexContainer.appendChild(artDiv);
-            showLandingPage();
         }
  
         function renderProducts(products) {
@@ -2149,8 +2284,8 @@
             document.getElementById('product-detail-view').classList.remove('hidden');
         }
 
-        function showProductGrid(mainCategory = 'all') {
-            console.log(mainCategory);
+        // Updated showProductGrid to reset data source
+        async function showProductGrid(mainCategory = 'all') {
             currentZone = mainCategory;
             // 每次切換專區時，重置篩選器
             activeFilters = { character: null, type: null };
@@ -2171,6 +2306,16 @@
             // Hide Work View
             const workView = document.getElementById('work-view');
             if (workView) workView.classList.add('hidden');
+
+            // --- Updated Logic ---
+            // If selecting a specific zone, trigger an initial API search for that brand
+            if (currentZone && currentZone !== 'all') {
+                const brandKeyword = currentZone.split(' (')[0];
+                await fetchData({ q: brandKeyword }, 'manual');
+            } else {
+                // Reset to full set if 'all'
+                await fetchData({}, 'manual');
+            }
 
             // 重要：切換到新的 applyFilters
             applyFilters();
@@ -2218,8 +2363,8 @@
             }
         }
 
-        // 4. 切換篩選條件
-        function toggleFilter(category, value) {
+        // 4. 切換篩選條件 (Updated to call API)
+        async function toggleFilter(category, value) {
             // Toggle Logic
             if (activeFilters[category] === value) {
                 activeFilters[category] = null; // 取消
@@ -2228,6 +2373,42 @@
             }
 
             updateFilterBtnStyles();
+
+            // 1. Build API Params based on active filters
+            const apiQuery = {};
+            
+            // Build Search Query (q) = [Brand Name] + [Character Name]
+            let searchTerms = [];
+
+            // If we are in a specific zone (Brand), always include it in the search 
+            if (currentZone && currentZone !== 'all') { 
+                searchTerms.push(currentZone);
+            }
+           
+            // Add Character if selected
+            if (activeFilters.character) {
+                searchTerms.push(activeFilters.character);
+            }
+
+            apiQuery.q = searchTerms.join(' ');
+            // Build Category Query (cat) = Type
+            if (activeFilters.type) {
+                // User requirement: 'cat' param finds 'major_category'
+                // The buttons pass 'type' (e.g. '娃娃') which matches major_category
+                apiQuery.cat = activeFilters.type;
+            }
+
+            // 2. Trigger Fetch in manual mode (don't auto-route)
+            // This ensures we get fresh data filtered by the API
+            await fetchData(apiQuery, 'manual');
+            
+            // 3. Ensure View is Correct (Force Grid View if on Landing)
+            document.getElementById('landing-view').classList.add('hidden');
+            document.getElementById('product-detail-view').classList.add('hidden');
+            document.getElementById('work-view').classList.add('hidden');
+            document.getElementById('product-grid-container').classList.remove('hidden');
+
+            // 4. Re-apply client-side Zone filtering (Brand) & Render
             applyFilters();
         }
 
@@ -2258,7 +2439,14 @@
 
         // 6. 核心篩選與渲染
         function applyFilters() {
-            if (!allProducts.length) return;
+            // Note: allProducts is now populated by the API call in toggleFilter
+            if (!allProducts.length) {
+                document.getElementById('product-grid').innerHTML = '';
+                document.getElementById('empty-state').classList.remove('hidden');
+                return;
+            } else {
+                document.getElementById('empty-state').classList.add('hidden');
+            }
 
             const grid = document.getElementById('product-grid');
             grid.innerHTML = ''; // Clear
@@ -2269,11 +2457,13 @@
                 const brand = p.brand || "";
                 const cat = p.product_category || "";
 
-                // A. Zone Filter (Hard Filter)
-                // 如果是 'all' (例如從詳情頁返回)，則顯示所有，否則嚴格比對品牌
+                // A. Zone Filter (Hard Filter - Client Side)
+                // We handle Brand filtering here because the API query usually handles cross-brand search
                 let zoneMatch = (currentZone === 'all') || brand.includes(currentZone);
                 if (!zoneMatch) return false;
 
+                // Note: We don't strictly need to re-filter B & C if the API did its job,
+                // but keeping them ensures consistency if the API returns loose matches.
                 // B. Character Filter
                 if (activeFilters.character) {
                     if (!tags.includes(activeFilters.character) && !name.includes(activeFilters.character)) return false;
@@ -2289,14 +2479,18 @@
                 return true;
             });
 
-            // Update UI Count
-            console.log("Filtered Items Count:", filtered.length);
-            renderProducts(filtered);
+            if (filtered.length === 0) {
+                document.getElementById('empty-state').classList.remove('hidden');
+            } else {
+                renderProducts(filtered);
+            }
         }
 
-        function clearSubFilters() {
+        async function clearSubFilters() {
             activeFilters = { character: null, type: null };
             updateFilterBtnStyles();
+            // Reset API fetch to get all data for the zone
+            await fetchData({}, 'manual');
             applyFilters();
         }
     </script>

@@ -6,181 +6,216 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.11/addons/p5.sound.min.js"></script>
 
     <script>// =================================================================
-      // p5.js 創作：The Brutalist Archive (精緻線條版)
-      // 修改重點：大幅降低線條粗細 (strokeWeight)，減少線條抖動幅度，創造細緻感
-      // =================================================================
+// p5.js 創作：The Brutalist Greenhouse (RWD 響應式版)
+// 特色：適應所有螢幕尺寸、自動調整物件密度、保持細緻線條與通透感
+// =================================================================
+
+let palette;
+let cols = [];
+let density = 1; // 密度係數，用於適應不同螢幕大小
+
+function setup() {
+  // 1. 使用視窗寬高建立畫布
+  createCanvas(windowWidth, windowHeight);
+  noLoop();
+  noCursor();
+
+  // 定義色票 (保持明亮通透風格)
+  palette = {
+    concreteBg: color(220, 225, 230),
+    woodDark: color(130, 90, 60),
+    woodLight: color(180, 140, 100),
+    structureLine: color(60), 
+    leafDark: color(40, 70, 60),
+    leafLight: color(80, 120, 100),
+    warmLightSource: color(255, 200, 100),
+    glazeFlow: color(245, 240, 235, 220)
+  };
+  
+  // 初始化佈局計算
+  calculateLayout();
+}
+
+function draw() {
+  // 重新計算密度係數 (以 1000x1000 為基準 1.0)
+  // 這樣大螢幕會有更多細節，小螢幕則保持簡潔
+  density = (width * height) / 1000000; 
+  // 限制密度不要太誇張 (最小 0.5, 最大 2.5)
+  density = constrain(density, 0.5, 2.5);
+
+  background(palette.concreteBg);
+  
+  drawBrightNoiseLayer();
+  drawStructureDelicate();
+  drawArchiveDataOptimized();
+  drawOrganicOvergrowthOptimized();
+  drawTransparentLightOverlay();
+  drawDelicateFrame();
+}
+
+// === RWD 核心功能 ===
+
+// 當視窗大小改變時觸發
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  calculateLayout(); // 重新計算柱子位置
+  redraw();          // 重新繪製畫面
+}
+
+// 計算佈局 (確保柱子永遠在相對正確的位置)
+function calculateLayout() {
+  cols = [width * 0.2, width * 0.5, width * 0.8];
+}
+
+// === 繪圖組件 (已針對 RWD 優化) ===
+
+function drawBrightNoiseLayer() {
+  noStroke();
+  // 噪點數量隨螢幕面積自動增減
+  let count = 3000 * density;
+  for(let i=0; i<count; i++){
+    fill(random(200, 255), 50);
+    rect(random(width), random(height), random(1,3), random(1,3));
+  }
+}
+
+function drawStructureDelicate() {
+  for (let x of cols) {
+    // 柱子寬度隨螢幕寬度微調，但保持在合理範圍
+    let colBaseW = width < 600 ? 60 : 100; // 手機版柱子細一點
+    let colWidth = random(colBaseW * 0.8, colBaseW * 1.2);
+    
+    noStroke();
+    fill(palette.woodDark);
+    rect(x - colWidth/2, 0, colWidth, height);
+    fill(palette.woodLight);
+    rect(x - colWidth/2 + 10, 0, colWidth-20, height);
+    
+    stroke(palette.structureLine); 
+    noFill();
+    
+    // 細緻線條
+    strokeWeight(1.2); 
+    let wiggle = 0.8;
+    line(x - colWidth/2 + random(-wiggle,wiggle), 0, x - colWidth/2 + random(-wiggle,wiggle), height);
+    line(x + colWidth/2 + random(-wiggle,wiggle), 0, x + colWidth/2 + random(-wiggle,wiggle), height);
+  }
+
+  stroke(palette.structureLine); 
+  strokeWeight(0.8);
+  let shelfWiggle = 0.5;
+  // 層架間距固定，不隨螢幕縮放，保持建築尺度感
+  for (let y = height * 0.15; y < height * 0.95; y += 150) {
+    line(0, y + random(-shelfWiggle,shelfWiggle), width, y + random(-shelfWiggle,shelfWiggle));
+    line(0, y+8 + random(-shelfWiggle,shelfWiggle), width, y+8 + random(-shelfWiggle,shelfWiggle));
+  }
+}
+
+function drawArchiveDataOptimized() {
+  noStroke();
+  let shelfPositions = [];
+  for (let y = height * 0.15; y < height * 0.95; y += 150) {
+      shelfPositions.push(y);
+  }
+  
+  for (let y of shelfPositions) {
+    // 手機上間距稍微大一點，避免太密集
+    let step = width < 600 ? 30 : 25;
+    
+    for (let x = 20; x < width - 20; x += step) {
+      let onColumn = false;
+      for(let colX of cols) if(abs(x - colX) < 50) onColumn = true;
+      if(onColumn) continue;
+
+      let r = noise(x*0.01, y*0.01) * 200 + 55;
+      let g = noise(x*0.01 + 100, y*0.01) * 200 + 55;
+      let b = noise(x*0.01 + 200, y*0.01) * 200 + 55;
       
-      let palette;
-      let cols = [];
-      
-      function setup() {
-        createCanvas(900, 1200);
-        noLoop();
-        noCursor();
-      
-        // --- 色票定義 ---
-        palette = {
-          concreteBg: color(220, 225, 230),
-          woodDark: color(130, 90, 60),
-          woodLight: color(180, 140, 100),
-          // 【修改】稍微加深線條顏色，確保細線清晰
-          structureLine: color(60), 
-          leafDark: color(40, 70, 60),
-          leafLight: color(80, 120, 100),
-          warmLightSource: color(255, 200, 100),
-          glazeFlow: color(245, 240, 235, 220)
-        };
-      
-        cols = [width * 0.2, width * 0.5, width * 0.8];
+      let h = random(15, 35);
+      fill(r, g, b, 220);
+      if(random() > 0.2) { 
+        rect(x, y - h, 15, h);
       }
-      
-      function draw() {
-        background(palette.concreteBg);
-        drawBrightNoiseLayer();
-      
-        // 【核心修改】繪製更細緻的結構
-        drawStructureDelicate();
-      
-        drawArchiveDataOptimized();
-        drawOrganicOvergrowthOptimized();
-        drawTransparentLightOverlay();
-        
-        // 【核心修改】繪製更細緻的邊框
-        drawDelicateFrame();
-      }
-      
-      // === 優化後的繪圖組件 ===
-      
-      function drawBrightNoiseLayer() {
-        noStroke();
-        for(let i=0; i<3000; i++){
-          fill(random(200, 255), 50);
-          rect(random(width), random(height), random(1,3), random(1,3));
-        }
-      }
-      
-      // 【核心修改】細緻化結構繪製函數
-      function drawStructureDelicate() {
-        for (let x of cols) {
-          let colWidth = random(80, 120);
-          noStroke();
-          fill(palette.woodDark);
-          rect(x - colWidth/2, 0, colWidth, height);
-          fill(palette.woodLight);
-          rect(x - colWidth/2 + 10, 0, colWidth-20, height);
-          
-          stroke(palette.structureLine); 
-          noFill();
-          
-          // 【修改1】柱子邊緣線變細 (1.2)，抖動變小 (0.8)
-          strokeWeight(1.2); 
-          let wiggle = 0.8;
-          line(x - colWidth/2 + random(-wiggle,wiggle), 0, x - colWidth/2 + random(-wiggle,wiggle), height);
-          line(x + colWidth/2 + random(-wiggle,wiggle), 0, x + colWidth/2 + random(-wiggle,wiggle), height);
-        }
-      
-        // 【修改2】層架線條變得非常細 (0.8)，抖動極小 (0.5)
-        stroke(palette.structureLine); 
-        strokeWeight(0.8);
-        let shelfWiggle = 0.5;
-        for (let y = height * 0.2; y < height * 0.9; y += 150) {
-          line(0, y + random(-shelfWiggle,shelfWiggle), width, y + random(-shelfWiggle,shelfWiggle));
-          line(0, y+8 + random(-shelfWiggle,shelfWiggle), width, y+8 + random(-shelfWiggle,shelfWiggle));
-        }
-      }
-      
-      function drawArchiveDataOptimized() {
-        noStroke();
-        let shelfPositions = [];
-        for (let y = height * 0.2; y < height * 0.9; y += 150) {
-            shelfPositions.push(y);
-        }
-        
-        for (let y of shelfPositions) {
-          for (let x = 20; x < width - 20; x += 25) {
-            let onColumn = false;
-            for(let colX of cols) if(abs(x - colX) < 50) onColumn = true;
-            if(onColumn) continue;
-      
-            let r = noise(x*0.01, y*0.01) * 200 + 55;
-            let g = noise(x*0.01 + 100, y*0.01) * 200 + 55;
-            let b = noise(x*0.01 + 200, y*0.01) * 200 + 55;
-            
-            let h = random(15, 35);
-            fill(r, g, b, 220);
-            if(random() > 0.2) { 
-              rect(x, y - h, 15, h);
-            }
-          }
-        }
-      }
-      
-      function drawOrganicOvergrowthOptimized() {
-        noStroke();
-        for (let i = 0; i < 250; i++) {
-          let pickCol = random(cols);
-          let x = pickCol + random(-120, 120);
-          let y = random(height);
-          
-          push();
-          translate(x, y);
-          rotate(random(TWO_PI));
-          let leafCol = lerpColor(palette.leafDark, palette.leafLight, random(1));
-          if(dist(x,y, width*0.85, height*0.25) < 350) {
-               leafCol = lerpColor(leafCol, color(255,255,150), 0.5);
-          }
-          fill(leafCol);
-          let size = random(30, 80);
-          ellipse(0, 0, size, size * random(0.6, 0.9));
-          pop();
-        }
-      
-        fill(palette.glazeFlow);
-        beginShape();
-        vertex(0, height);
-        for(let x = 0; x <= width; x+=30){ 
-            let y = height - 50 - noise(x*0.02)*100;
-            for(let colX of cols) if(abs(x - colX) < 60) y -= 40;
-            curveVertex(x, y);
-        }
-        vertex(width, height);
-        endShape(CLOSE);
-      }
-      
-      function drawTransparentLightOverlay() {
-        let lightX = width * 0.85;
-        let lightY = height * 0.25;
-        let maxDist = width * 1.3;
-      
-        let ctx = drawingContext;
-        let gradient = ctx.createRadialGradient(lightX, lightY, 0, lightX, lightY, maxDist);
-        
-        gradient.addColorStop(0, 'rgba(255, 255, 220, 0)'); 
-        gradient.addColorStop(0.4, 'rgba(200, 180, 150, 0.2)');
-        gradient.addColorStop(1, 'rgba(40, 50, 60, 0.6)');
-        
-        ctx.fillStyle = gradient;
-        rect(0, 0, width, height);
-      
-        noStroke();
-        for(let i=0; i<8; i++){
-            fill(255, 220, 150, 50 - i*5);
-            ellipse(lightX, lightY, i*40, i*40);
-        }
-      }
-      
-      // 【核心修改】細緻化邊框
-      function drawDelicateFrame(){
-          noFill();
-          stroke(palette.structureLine);
-          // 【修改3】邊框變細
-          strokeWeight(2); 
-          rect(0,0,width,height);
-      }
-      
-      function mousePressed() {
-        redraw();
-      }</script>
+    }
+  }
+}
+
+function drawOrganicOvergrowthOptimized() {
+  noStroke();
+  // 植物數量隨螢幕面積自動增減
+  let plantCount = 250 * density;
+  
+  for (let i = 0; i < plantCount; i++) {
+    let pickCol = random(cols);
+    let x = pickCol + random(-120, 120);
+    let y = random(height);
+    
+    push();
+    translate(x, y);
+    rotate(random(TWO_PI));
+    let leafCol = lerpColor(palette.leafDark, palette.leafLight, random(1));
+    
+    // 光源位置改為相對座標
+    let lightX = width * 0.85;
+    let lightY = height * 0.25;
+    
+    if(dist(x,y, lightX, lightY) < min(width, height) * 0.4) {
+         leafCol = lerpColor(leafCol, color(255,255,150), 0.5);
+    }
+    fill(leafCol);
+    let size = random(30, 80);
+    // 手機版植物稍微小一點
+    if (width < 600) size *= 0.7;
+    
+    ellipse(0, 0, size, size * random(0.6, 0.9));
+    pop();
+  }
+
+  fill(palette.glazeFlow);
+  beginShape();
+  vertex(0, height);
+  for(let x = 0; x <= width; x+=30){ 
+      let y = height - 50 - noise(x*0.02)*100;
+      for(let colX of cols) if(abs(x - colX) < 60) y -= 40;
+      curveVertex(x, y);
+  }
+  vertex(width, height);
+  endShape(CLOSE);
+}
+
+function drawTransparentLightOverlay() {
+  let lightX = width * 0.85;
+  let lightY = height * 0.25;
+  // 光照範圍隨螢幕大小縮放
+  let maxDist = max(width, height) * 1.3; 
+
+  let ctx = drawingContext;
+  let gradient = ctx.createRadialGradient(lightX, lightY, 0, lightX, lightY, maxDist);
+  
+  gradient.addColorStop(0, 'rgba(255, 255, 220, 0)'); 
+  gradient.addColorStop(0.4, 'rgba(200, 180, 150, 0.2)');
+  gradient.addColorStop(1, 'rgba(40, 50, 60, 0.6)');
+  
+  ctx.fillStyle = gradient;
+  rect(0, 0, width, height);
+
+  noStroke();
+  for(let i=0; i<8; i++){
+      fill(255, 220, 150, 50 - i*5);
+      ellipse(lightX, lightY, i*40, i*40);
+  }
+}
+
+function drawDelicateFrame(){
+    noFill();
+    stroke(palette.structureLine);
+    strokeWeight(2); 
+    rect(0,0,width,height);
+}
+
+function mousePressed() {
+  redraw();
+}</script>
 
     <link rel="stylesheet" type="text/css" href="style.css">
     <meta charset="utf-8" />
@@ -191,5 +226,6 @@
     <main>
     </main>
 </body>
+
 
 </html>

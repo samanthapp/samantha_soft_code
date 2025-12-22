@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.11/addons/p5.sound.min.js"></script>
+
+    <script>// =================================================================
+      // 概念創作：The Compiler's Blue Hour (Visual Interpretation)
+      // 核心概念：時間過渡、冷暖對比、Nosaj Thing 的故障美學(Glitch)
+      // 互動：滑鼠左右移動控制「時間」 (左=白晝/代碼, 右=藍色時刻/感性)
+      // =================================================================
+      
+      let canvas;
+      
+      // --- 調色盤變數 ---
+      // 狀態 A: Day / Code (白晝工作模式)
+      let dayBg, dayFlow, dayAccent;
+      // 狀態 B: Blue Hour (藍色時刻模式)
+      let nightBg, nightFlow, nightAccent;
+      
+      // 當前混合顏色
+      let currentBg, currentFlow, currentAccent;
+      
+      let robotSize = 100;
+      let particles = [];
+      
+      function setup() {
+        canvas = createCanvas(windowWidth, windowHeight);
+        noCursor();
+      
+        // 定義顏色
+        // A. Day Mode (妳喜歡的極簡代碼風)
+        dayBg = color(245, 245, 242);        // 米白
+        dayFlow = color(35, 75, 65);         // 編譯器綠
+        dayAccent = color(35, 75, 65);       // 同上，強調專注
+      
+        // B. Blue Hour Mode (Nosaj Thing 氛圍 + 咖啡廳暖燈)
+        nightBg = color(20, 25, 45);         // 深夜藍 (Deep Twilight)
+        nightFlow = color(10, 15, 30);       // 更深的暗流
+        nightAccent = color(255, 160, 60);   // 溫暖的燈泡橘 (Warm Lamp)
+      
+        // 初始化粒子
+        for(let i=0; i<20; i++){
+          particles.push(new Particle());
+        }
+      }
+      
+      function draw() {
+        // 1. 計算過渡係數 (Transition Factor)
+        // 滑鼠在左邊是 0 (Day)，右邊是 1 (Blue Hour)
+        let t = map(mouseX, 0, width, 0, 1);
+        t = constrain(t, 0, 1);
+      
+        // 2. 顏色混合 (Color Lerping)
+        currentBg = lerpColor(dayBg, nightBg, t);
+        currentFlow = lerpColor(dayFlow, nightFlow, t);
+        currentAccent = lerpColor(dayAccent, nightAccent, t);
+      
+        background(currentBg);
+        
+        // 3. 繪製背景網格 (隨時間漸變透明度)
+        drawSubtleGrid(t);
+      
+        // 4. 流動層 (The Flow) - 底部波浪
+        drawFlow(t);
+      
+        // 5. 核心層 (The Robot)
+        push();
+        translate(width / 2, height / 2 - 50);
+        // 呼吸浮動
+        translate(0, sin(frameCount * 0.04) * 5);
+        drawRobot(currentAccent, t);
+        pop();
+      
+        // 6. 氛圍粒子 (Texture)
+        handleParticles(t);
+      
+        // 7. Nosaj Thing 風格的 Glitch 效果 (故障美學)
+        // 當滑鼠越往右 (進入 Blue Hour)，Glitch 越明顯
+        if (random() < 0.05 + t * 0.1) { 
+          applyGlitch(t);
+        }
+        
+        // 繪製滑鼠游標 (一個簡單的十字)
+        drawCustomCursor(currentAccent);
+      }
+      
+      // === 繪圖函數 ===
+      
+      function drawSubtleGrid(t) {
+        // 在 Blue Hour 模式下，網格會變得更像 "Tron" 風格的微光
+        let gridAlpha = map(t, 0, 1, 30, 80); 
+        stroke(150, 150, 180, gridAlpha);
+        strokeWeight(1);
+        
+        let gridSize = 50;
+        for (let x = 0; x < width; x += gridSize) {
+          line(x, 0, x, height);
+        }
+        for (let y = 0; y < height; y += gridSize) {
+          line(0, y, width, y);
+        }
+      }
+      
+      function drawFlow(t) {
+        fill(currentFlow);
+        noStroke();
+        
+        beginShape();
+        vertex(0, height);
+        
+        let baseHeight = height * 0.7;
+        // 在 Blue Hour 模式下，波浪會變得比較平緩深沉
+        let amp = map(t, 0, 1, 40, 20); 
+        
+        for (let x = 0; x <= width; x += 20) {
+          // 疊加兩個噪聲波，製造複雜的液體質感
+          let n1 = noise(x * 0.005, frameCount * 0.005);
+          let n2 = noise(x * 0.01 + 100, frameCount * 0.01);
+          let y = baseHeight + map(n1 + n2, 0, 2, -amp, amp);
+          vertex(x, y);
+        }
+        
+        vertex(width, height);
+        endShape(CLOSE);
+        
+        // 在液體表面加一條細線 (Highlight)
+        stroke(currentAccent);
+        strokeWeight(t * 2); // Blue Hour 時線條變亮
+        noFill();
+        beginShape();
+        for (let x = 0; x <= width; x += 20) {
+          let n1 = noise(x * 0.005, frameCount * 0.005);
+          let n2 = noise(x * 0.01 + 100, frameCount * 0.01);
+          let y = baseHeight + map(n1 + n2, 0, 2, -amp, amp);
+          vertex(x, y);
+        }
+        endShape();
+      }
+      
+      function drawRobot(accentColor, t) {
+        noStroke();
+        
+        // 機身顏色也會隨環境變暗
+        let bodyColor = lerpColor(color(40, 45, 50), color(10, 15, 20), t);
+        let faceColor = lerpColor(color(20, 30, 25), color(5, 5, 10), t);
+      
+        // 頭部
+        fill(bodyColor);
+        rectMode(CENTER);
+        rect(0, 0, robotSize, robotSize * 0.8, 12);
+        
+        // 螢幕
+        fill(faceColor);
+        rect(0, 0, robotSize * 0.8, robotSize * 0.5, 6);
+        
+        // 眼睛 (這是重點：從綠色變成暖橘色)
+        fill(accentColor);
+        // 加一點發光效果 (簡單的同心圓)
+        if (t > 0.5) { // 進入夜晚模式，光暈增強
+          fill(red(accentColor), green(accentColor), blue(accentColor), 50);
+          ellipse(-robotSize * 0.2, 0, 25, 25);
+          ellipse(robotSize * 0.2, 0, 25, 25);
+          fill(accentColor);
+        }
+        
+        ellipse(-robotSize * 0.2, 0, 12, 12);
+        ellipse(robotSize * 0.2, 0, 12, 12);
+        
+        // 天線
+        stroke(bodyColor);
+        strokeWeight(3);
+        line(0, -robotSize*0.4, 0, -robotSize*0.65);
+        noStroke();
+        fill(t > 0.5 ? color(255, 100, 100) : accentColor); 
+        ellipse(0, -robotSize*0.7, 6, 6);
+      }
+      
+      // 模擬 Nosaj Thing 音樂中的 Glitch 效果
+      function applyGlitch(t) {
+        // 只在局部區域發生錯位
+        let sliceHeight = random(5, 30);
+        let sliceY = random(0, height - sliceHeight);
+        let offset = random(-10, 10) * (1 + t * 2); // Blue Hour 時錯位更嚴重
+        
+        // 這裡使用 copy() 函數來搬移像素，製造故障感
+        // 注意：這在 p5.js 中可能會比較吃效能，我們用簡單的矩形遮罩模擬
+        
+        // 抓取螢幕一部分的影像 (模擬) -> 實際上畫一個稍微錯位的矩形條太複雜
+        // 我們用更抽象的方式：畫隨機的掃描線
+        
+        stroke(currentAccent);
+        strokeWeight(1);
+        line(0, sliceY, width, sliceY);
+        
+        // 偶爾畫一個反色的色塊
+        if (random() < 0.2) {
+          fill(currentAccent);
+          noStroke();
+          rect(random(width), random(height), random(50), 2);
+        }
+      }
+      
+      function handleParticles(t) {
+        for (let p of particles) {
+          p.update(t);
+          p.display(currentAccent);
+        }
+      }
+      
+      class Particle {
+        constructor() {
+          this.reset();
+        }
+        
+        reset() {
+          this.x = random(width);
+          this.y = random(height * 0.6, height); // 只在下方產生
+          this.size = random(2, 6);
+          this.speedY = random(0.5, 1.5);
+          this.alpha = random(50, 150);
+        }
+        
+        update(t) {
+          this.y -= this.speedY;
+          this.alpha -= 1;
+          
+          // Blue Hour 時粒子飄得比較慢，比較夢幻
+          if (t > 0.5) this.y += 0.2; 
+          
+          if (this.alpha < 0) this.reset();
+        }
+        
+        display(col) {
+          noStroke();
+          fill(red(col), green(col), blue(col), this.alpha);
+          ellipse(this.x, this.y, this.size);
+        }
+      }
+      
+      function drawCustomCursor(col) {
+        stroke(col);
+        strokeWeight(2);
+        line(mouseX - 10, mouseY, mouseX + 10, mouseY);
+        line(mouseX, mouseY - 10, mouseX, mouseY + 10);
+      }
+      
+      function windowResized() {
+        resizeCanvas(windowWidth, windowHeight);
+      }</script>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+
+</head>
+
+<body>
+    <main>
+    </main>
+</body>
+
+</html>

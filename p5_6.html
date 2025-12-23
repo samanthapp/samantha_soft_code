@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <script src="https://cdn.jsdelivr.net/npm/p5@1.11.11/lib/p5.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.11.11/addons/p5.sound.min.js"></script>
+
+    <script>// 靈感來源：Víkingur Ólafsson演奏的巴哈 BWV 974 II Adagio
+      // 場景：冰島 Ísafjörður 冬日峽灣
+      // 版本 12：修正房子顏色。低飽和度、蒼白、風化感（非粉嫩），造型方正。
+      
+      let snow = [];
+      let numFlakes = 200;
+      let timeOffset = 0;
+      let buildings = [];
+      let housePalette = []; 
+      
+      // 色彩定義 (HSB)
+      let twilightSkyBlue, icySnowWhite, streetLightGold, mistLayer, windowWarmth;
+      let mountainFar, mountainMid, mountainClose;
+      
+      function setup() {
+        createCanvas(windowWidth, windowHeight);
+        colorMode(HSB, 360, 100, 100, 100);
+      
+        // --- 環境色彩 (保持不變) ---
+        twilightSkyBlue = color(210, 60, 85, 100);
+        mountainFar = color(210, 20, 95, 70);   
+        mountainMid = color(215, 30, 90, 85);  
+        mountainClose = color(215, 40, 85, 95); 
+        icySnowWhite = color(200, 5, 100, 90);  
+        mistLayer = color(210, 30, 80, 40);     
+        streetLightGold = color(35, 90, 100, 100); 
+        windowWarmth = color(40, 85, 100, 100);
+      
+        // --- [修改] 冰島小屋色彩盤：蒼白低飽和 (Weathered Pale Tones) ---
+        // 飽和度極低 (10-25)，亮度高 (85-95) -> 產生"淺灰帶點色"的效果
+        housePalette = [
+          color(350, 40, 90), // 蒼白的灰紅色 (像褪色的紅漆)
+          color(40, 45, 95),  // 蒼白的米黃色 (像舊木頭)
+          color(200, 35, 90), // 蒼白的灰藍色
+          color(160, 20, 85), // 蒼白的灰綠色
+          color(220, 45, 95)   // 接近白色的淺灰
+        ];
+      
+        // 初始化雪花
+        for (let i = 0; i < numFlakes; i++) {
+          snow.push(new Snowflake());
+        }
+      
+        // 初始化小屋
+        let numBuildings = 22; 
+        for (let i = 0; i < numBuildings; i++) {
+          let x = map(i, 0, numBuildings - 1, width * 0.1, width * 0.9);
+          x += random(-15, 15); 
+          let yBase = height * 0.82;
+          let yOffset = noise(i*10)*30; 
+          buildings.push(new Building(x, yBase - yOffset));
+        }
+      
+        noStroke();
+      }
+      
+      function draw() {
+        background(twilightSkyBlue); 
+        timeOffset += 0.0002; 
+      
+        // 遠景與中景
+        drawFramedFjordLayer(height * 0.4, 0.002, mountainFar, 1.1, 0);
+        drawFramedFjordLayer(height * 0.55, 0.003, mountainMid, 1.0, 40);
+      
+        // 薄霧
+        fill(mistLayer);
+        beginShape();
+        vertex(0, height); vertex(0, height*0.7);
+        for(let x=0; x<=width; x+=20) vertex(x, height*0.75 + noise(x*0.01 + timeOffset)*30);
+        vertex(width, height*0.7); vertex(width, height);
+        endShape(CLOSE);
+      
+        // 街燈光暈
+        drawBloomingLights();
+      
+        // 繪製小屋
+        for (let b of buildings) {
+          b.display();
+        }
+      
+        // 前景山牆
+        drawFramedFjordLayer(height * 0.9, 0.005, mountainClose, 0.9, 280);
+      
+        // 落雪
+        for (let flake of snow) {
+          flake.update();
+          flake.display();
+        }
+      }
+      
+      // --- 輔助類別與函數 ---
+      
+      class Building {
+        constructor(x, y) {
+          this.x = x;
+          this.y = y;
+          
+          // 造型維持方正
+          let baseSize = random(30, 35); 
+          this.w = baseSize; 
+          this.h = baseSize * random(0.95, 1.05); // 極接近正方形
+          
+          this.roofH = random(8, 14); 
+          
+          this.wallColor = random(housePalette);
+          do {
+            this.roofColor = random(housePalette);
+          } while (this.roofColor === this.wallColor);
+          
+          this.windows = [];
+          if (random(1) > 0.1) { 
+              let winW = this.w * 0.22; 
+              let winH = this.w * 0.25;
+              this.windows.push({x: this.x + this.w*0.2, y: this.y - this.h*0.6, w: winW, h: winH});
+              this.windows.push({x: this.x + this.w*0.58, y: this.y - this.h*0.6, w: winW, h: winH});
+          }
+        }
+      
+        display() {
+          // 1. 牆壁
+          fill(this.wallColor);
+          rect(this.x, this.y - this.h, this.w, this.h);
+      
+          // 2. 尖屋頂
+          fill(this.roofColor);
+          triangle(this.x, this.y - this.h, 
+                   this.x + this.w, this.y - this.h, 
+                   this.x + this.w/2, this.y - this.h - this.roofH); 
+      
+          // 3. 溫暖窗光
+          fill(windowWarmth);
+          for (let win of this.windows) {
+            rect(win.x, win.y, win.w, win.h);
+          }
+          
+          // 4. 雪地反光 (極淡)
+          fill(hue(windowWarmth), saturation(windowWarmth), 95, 10);
+          ellipse(this.x + this.w/2, this.y+2, this.w*1.2, 8);
+        }
+      }
+      
+      function drawBloomingLights() {
+        let lightCount = 6; 
+        for (let i = 0; i < lightCount; i++) {
+          let spread = width * 0.8; 
+          let x = (width/2) - (spread/2) + (i * (spread/(lightCount-1)));
+          x += noise(i)*100 - 50; 
+          let y = height * 0.83 + noise(i + timeOffset * 2) * 20;
+          
+          for(let r = 100; r > 0; r -= 10) {
+            let alpha = map(r, 0, 100, 35, 0); 
+            fill(hue(streetLightGold), saturation(streetLightGold), brightness(streetLightGold), alpha);
+            ellipse(x, y, r * 1.4, r); 
+          }
+          fill(hue(streetLightGold), 40, 100, 100);
+          ellipse(x, y, 5, 5);
+        }
+      }
+      
+      function drawFramedFjordLayer(yBase, noiseScale, col, speedMult, frameStrength) {
+        fill(col);
+        beginShape();
+        vertex(0, height);
+        for (let x = 0; x <= width; x += 10) {
+          let distFromCenter = abs(x - width / 2) / (width / 2);
+          let frameShape = pow(distFromCenter, 3) * frameStrength;
+          let noiseVal = noise(x * noiseScale + timeOffset * speedMult) * height * 0.15;
+          let y = yBase - frameShape - noiseVal;
+          vertex(x, y);
+        }
+        vertex(width, height);
+        endShape(CLOSE);
+      }
+      
+      class Snowflake {
+        constructor() {
+          this.reset();
+          this.y = random(height);
+        }
+        reset() {
+          this.x = random(width);
+          this.y = random(-50, -10);
+          this.size = random(1.5, 4);
+          this.speed = random(0.5, 1.5);
+          this.wobble = random(0, 100);
+          this.alpha = random(60, 98);
+        }
+        update() {
+          this.y += this.speed;
+          this.x += sin(this.y * 0.008 + this.wobble) * 0.7;
+          if (this.y > height + 10) this.reset();
+        }
+        display() {
+          fill(icySnowWhite);
+          ellipse(this.x, this.y, this.size, this.size);
+        }
+      }
+      
+      function windowResized() {
+        resizeCanvas(windowWidth, windowHeight);
+        setup();
+      }</script>
+
+    <link rel="stylesheet" type="text/css" href="style.css">
+    <meta charset="utf-8" />
+
+</head>
+
+<body>
+    <main>
+    </main>
+</body>
+
+</html>

@@ -28,7 +28,7 @@
     </style>
 </head>
 <body>
-    <div id="instruction">移動滑鼠感受音樂波動 / Move mouse to interact</div>
+    <div id="instruction"> Move mouse to interact</div>
     <script>
         let vinylRotation = 0;
         let particles = [];
@@ -88,6 +88,28 @@
             push();
             translate(width / 2, height / 2);
             
+            // --- 響應式縮放：手機/直立螢幕調整 ---
+            let scaleFactor = 1;
+            let baseDiameter = 300; // 原始設計直徑
+            
+            if (height > width) {
+                // 直立畫面 (Portrait)：如手機或 5:4 螢幕
+                // 縮小唱片以露出更多背景 (設定為螢幕寬度的 55%)
+                let targetDiameter = width * 0.55; 
+                // 限制大小範圍，避免過小或過大
+                targetDiameter = constrain(targetDiameter, 180, 320);
+                scaleFactor = targetDiameter / baseDiameter;
+            } else {
+                // 橫式畫面 (Landscape)
+                let targetDiameter = min(width, height) * 0.6;
+                // 限制最大尺寸，避免在大螢幕上佔據太多空間
+                targetDiameter = constrain(targetDiameter, 250, 350);
+                scaleFactor = targetDiameter / baseDiameter;
+            }
+            
+            scale(scaleFactor);
+            // -------------------------------------
+
             // 唱片旋轉
             rotate(vinylRotation);
             vinylRotation += 0.8; // 33 RPM slow spin feel

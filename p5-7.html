@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tainan IPA Night - Paradise</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background-color: #0d0d0d;
+            font-family: 'Courier New', Courier, monospace;
+        }
+        canvas {
+            display: block;
+        }
+        #instruction {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: #888;
+            font-size: 12px;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+<body>
+    <div id="instruction">移動滑鼠感受音樂波動 / Move mouse to interact</div>
+    <script>
+        let vinylRotation = 0;
+        let particles = [];
+        let bubbles = [];
+        let bassPulse = 0;
+        // 更新歌詞為 Sade - Paradise
+        let lyrics = [
+            "I'd wash the sand off the shore", 
+            "Give you the world if it was mine", 
+            "Feels like paradise", 
+            "Ooh what a life", 
+            "Tainan Night"
+        ];
+        let currentLyricIndex = 0;
+        let lyricAlpha = 0;
+        let lyricTimer = 0;
+        let metalBg; // 用於儲存金屬背景圖層
+
+        function setup() {
+            createCanvas(windowWidth, windowHeight);
+            angleMode(DEGREES);
+            
+            // 預先生成金屬背景，提升效能
+            createMetalBackground();
+            
+            // 初始化窗外夜光粒子
+            for(let i=0; i<50; i++){
+                particles.push(new LightParticle());
+            }
+
+            // 初始化啤酒氣泡
+            for(let i=0; i<30; i++){
+                bubbles.push(new BeerBubble());
+            }
+        }
+
+        function draw() {
+            // 1. 背景：舊金屬外牆 (Old Metal Wall)
+            background(10);
+            
+            // 安全檢查：確保 metalBg 存在且尺寸大於 0 才繪製
+            if (metalBg && metalBg.width > 0 && metalBg.height > 0) {
+                image(metalBg, 0, 0);
+            }
+
+            // 2. 窗外夜光 (Window Night Light)
+            drawWindowGlow();
+
+            // 3. 音響震動氛圍 (Speaker Vibes)
+            // Paradise 的節奏稍微重一點，讓脈動感稍微加強
+            let groove = sin(frameCount * 1.8) * 20; 
+            bassPulse = map(sin(frameCount * 2.5), -1, 1, 0, 18);
+            
+            drawSpeakerCones();
+
+            // 4. 黑膠唱片 (Vinyl Record)
+            push();
+            translate(width / 2, height / 2);
+            
+            // 唱片旋轉
+            rotate(vinylRotation);
+            vinylRotation += 0.8; // 33 RPM slow spin feel
+
+            // 唱片本體
+            noStroke();
+            fill(10); // 黑膠黑
+            circle(0, 0, 300);
+            
+            // 唱片紋路 (Grooves)
+            noFill();
+            stroke(40);
+            strokeWeight(1);
+            for(let r = 50; r < 140; r+=3) {
+                if (r % 20 === 0) stroke(60); // 反光
+                else stroke(35);
+                circle(0, 0, r * 2);
+            }
+
+            // 唱片標籤 (Label) - 模擬 Sade 專輯風格色調
+            fill(180, 140, 100); // 復古米黃/棕色
+            noStroke();
+            circle(0, 0, 90);
+            
+            fill(80, 40, 20);
+            textAlign(CENTER, CENTER);
+            textSize(8);
+            text("SADE", 0, -15);
+            // 更新唱片上的歌名
+            textSize(10);
+            text("PARADISE", 0, 15);
+
+            // 中心孔
+            fill(10);
+            circle(0, 0, 6);
+            pop();
+
+            // 5. 精釀 IPA 氛圍 (Craft Beer Bubbles)
+            // 在畫面下方疊加金黃色氣泡
+            drawBeerAtmosphere();
+
+            // 6. 歌詞/回憶浮現 (Lyrics/Memories)
+            drawLyrics();
+        }
+
+        function createMetalBackground() {
+            // 確保寬高至少為 1，避免 createGraphics 錯誤
+            let bgW = max(width, 1);
+            let bgH = max(height, 1);
+
+            metalBg = createGraphics(bgW, bgH);
+            
+            // 基礎深色金屬色
+            metalBg.background(40, 43, 45); 
+            
+            // 模擬金屬板接縫 (Vertical Panels)
+            let panelWidth = random(100, 200);
+            for(let x = 0; x < bgW; x += panelWidth) {
+                // 接縫陰影
+                metalBg.stroke(20);
+                metalBg.strokeWeight(2);
+                metalBg.line(x, 0, x, bgH);
+                metalBg.stroke(60);
+                metalBg.strokeWeight(1);
+                metalBg.line(x+2, 0, x+2, bgH); // 高光
+
+                // 鉚釘 (Rivets)
+                metalBg.noStroke();
+                metalBg.fill(30);
+                for(let y = 20; y < bgH; y += 100) {
+                    metalBg.circle(x + 10, y, 5);
+                    metalBg.circle(x - 10, y, 5);
+                }
+            }
+
+            // 添加鏽蝕質感 (Rust & Grunge)
+            metalBg.noStroke();
+            for(let i = 0; i < 2000; i++) {
+                let x = random(bgW);
+                let y = random(bgH);
+                let w = random(2, 60);
+                let h = random(2, 60);
+                
+                // 鏽色：紅棕色到橘色
+                let rustColor = color(random(100, 160), random(50, 90), random(30, 60), random(10, 50));
+                
+                // 污漬：深黑色
+                if (random() > 0.7) {
+                    rustColor = color(0, 0, 0, random(20, 80));
+                }
+
+                metalBg.fill(rustColor);
+                metalBg.ellipse(x, y, w, h);
+            }
+
+            // 刮痕 (Scratches)
+            metalBg.stroke(100, 100, 100, 30);
+            metalBg.strokeWeight(1);
+            for(let i=0; i<100; i++){
+                let x = random(bgW);
+                let y = random(bgH);
+                metalBg.line(x, y, x + random(-20, 20), y + random(-20, 20));
+            }
+        }
+
+        function drawWindowGlow() {
+            // 模擬右側窗戶透進來的光
+            push();
+            // 混合模式讓光暈更好看
+            blendMode(ADD);
+            
+            // 窗框陰影
+            fill(5, 5, 10, 150);
+            rect(width - 200, 0, 200, height);
+
+            // 流動的城市夜光
+            for (let p of particles) {
+                p.update();
+                p.display();
+            }
+            pop();
+        }
+
+        function drawSpeakerCones() {
+            // 背景隱約的音響單體，隨音樂震動
+            push();
+            noFill();
+            // 讓音響線條更融入金屬背景
+            stroke(60, 60, 65, 150); 
+            strokeWeight(2);
+            
+            let centerX = width * 0.2;
+            let centerY = height * 0.5;
+            
+            // 隨滑鼠互動稍微偏移
+            let mouseOffset = map(mouseX, 0, width, -10, 10);
+            
+            for(let i=0; i<3; i++) {
+                let size = 100 + i * 80 + bassPulse * 2;
+                let alpha = map(size, 100, 340, 100, 0);
+                stroke(70, 70, 75, alpha);
+                circle(centerX + mouseOffset, centerY, size);
+            }
+            pop();
+        }
+
+        function drawBeerAtmosphere() {
+            // 底部金黃色漸層光暈
+            push();
+            blendMode(ADD);
+            let gradientHeight = height * 0.4;
+            for(let y = height; y > height - gradientHeight; y-=5) {
+                let inter = map(y, height - gradientHeight, height, 0, 1);
+                let c = color(255, 160, 0, 2 * inter); // IPA Amber Color
+                fill(c);
+                noStroke();
+                rect(0, y, width, 5);
+            }
+
+            // 氣泡
+            for (let b of bubbles) {
+                b.update();
+                b.display();
+            }
+            pop();
+        }
+
+        function drawLyrics() {
+            lyricTimer++;
+            if (lyricTimer > 300) { // 每隔一段時間切換
+                lyricAlpha -= 2;
+                if (lyricAlpha <= 0) {
+                    currentLyricIndex = (currentLyricIndex + 1) % lyrics.length;
+                    lyricTimer = 0;
+                }
+            } else if (lyricTimer < 100) {
+                lyricAlpha += 2;
+            }
+
+            fill(200, 200, 200, constrain(lyricAlpha, 0, 180));
+            noStroke();
+            textAlign(CENTER, CENTER);
+            textSize(24 + bassPulse/2); // 字體隨低音微動
+            textStyle(ITALIC);
+            
+            // 跟隨滑鼠的視差效果
+            let tx = width/2 + map(mouseX, 0, width, -20, 20);
+            let ty = height - 100 + map(mouseY, 0, height, -10, 10);
+            
+            text(lyrics[currentLyricIndex], tx, ty);
+        }
+
+        // --- Classes ---
+
+        class LightParticle {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = random(width - 250, width);
+                this.y = random(height);
+                this.size = random(2, 60);
+                this.speedY = random(0.5, 2);
+                this.color = color(random(0, 50), random(100, 255), random(200, 255), random(5, 20)); // 青藍色調/霓虹感
+                if(random(1) > 0.7) this.color = color(255, 50, 100, random(5, 15)); // 偶爾的紅色霓虹
+            }
+            
+            update() {
+                this.y += this.speedY;
+                if (this.y > height) {
+                    this.reset();
+                    this.y = -50;
+                }
+            }
+            
+            display() {
+                noStroke();
+                fill(this.color);
+                circle(this.x, this.y, this.size);
+            }
+        }
+
+        class BeerBubble {
+            constructor() {
+                this.reset();
+            }
+            
+            reset() {
+                this.x = random(width);
+                this.y = random(height, height + 100);
+                this.size = random(2, 6);
+                this.speed = random(1, 3);
+                this.wobble = random(0, 100);
+            }
+            
+            update() {
+                this.y -= this.speed;
+                this.x += sin(frameCount * 0.05 + this.wobble) * 0.5; // 氣泡搖晃上升
+                
+                if (this.y < 0) {
+                    this.reset();
+                }
+            }
+            
+            display() {
+                fill(255, 200, 100, 150); // 金色氣泡
+                noStroke();
+                circle(this.x, this.y, this.size);
+            }
+        }
+
+        function windowResized() {
+            resizeCanvas(windowWidth, windowHeight);
+            createMetalBackground(); // 重繪背景
+            particles = [];
+            for(let i=0; i<50; i++) particles.push(new LightParticle());
+        }
+    </script>
+</body>
+</html>

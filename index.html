@@ -48,6 +48,12 @@
             /* UX: 全站準心游標 */
         }
 
+        /* 鎖定滾動 Class (JS動態添加) */
+        body.no-scroll {
+            overflow: hidden !important;
+            height: 100vh;
+        }
+
         /* 自定義游標跟隨文字 (Tooltip) */
         #cursor-tooltip {
             position: fixed;
@@ -535,21 +541,30 @@
             display: none !important;
         }
 
-        /* --- Full Screen Navigation Overlay --- */
+        /* --- Full Screen Navigation Overlay Fixed --- */
         #nav-overlay {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
-            height: 100%;
+            /* 修正：使用 dynamic viewport height 解決手機網址列遮擋問題 */
+            height: 100vh;
+            height: 100dvh; 
+            
             background-color: rgba(250, 249, 246, 0.95);
-            /* 半透明背景 */
             backdrop-filter: blur(10px);
             z-index: 10000;
+            
+            /* FIX: 啟用彈性盒模型 + 自動捲動 */
             display: flex;
             flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            overflow-y: auto; 
+            -webkit-overflow-scrolling: touch; /* iOS 慣性捲動 */
+            
+            /* 關鍵：初始設定不強制置中，靠 margin: auto 處理 */
+            justify-content: flex-start;
+            padding: 20px 0;
+            
             opacity: 0;
             pointer-events: none;
             transition: opacity 0.3s ease-in-out;
@@ -558,6 +573,18 @@
         #nav-overlay.active {
             opacity: 1;
             pointer-events: auto;
+        }
+
+        #nav-links-container {
+            /* FIX: 利用 margin: auto 達成「有空間時置中，沒空間時從頂部開始」的效果 */
+            margin: auto;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            /* 預留底部空間，避免手機底部操作條遮擋 */
+            padding-bottom: 80px; 
+            padding-top: 60px; /* 避開關閉按鈕 */
         }
 
         #nav-overlay a {
@@ -580,15 +607,19 @@
         }
 
         #close-nav-btn {
-            position: absolute;
-            top: 30px;
-            right: 30px;
+            /* FIX: 固定在右上角，不受捲動影響 */
+            position: fixed; 
+            top: 20px;
+            right: 20px;
             font-family: 'Space Mono', monospace;
             font-size: 1.5rem;
             cursor: pointer;
             color: var(--primary-text);
-            background: none;
+            background: rgba(250, 249, 246, 0.8); /* 增加一點背景防止文字重疊時看不清 */
             border: none;
+            z-index: 10001;
+            padding: 10px;
+            border-radius: 50%;
         }
 
         /* --- Data Index List View --- */
@@ -848,7 +879,7 @@
                             0%, 100% { opacity: 0.3; transform: scaleX(0.8); }
                             50% { opacity: 1; transform: scaleX(1); }
                           }
-                    
+                       
                           .brand-text {
                             font-family: 'Inter', sans-serif;
                             font-weight: 900;
@@ -858,7 +889,7 @@
                             text-anchor: middle;
                             text-transform: uppercase;
                           }
-                    
+                       
                           .code-text {
                             font-family: 'Space Mono', monospace;
                             font-weight: 600;
@@ -868,12 +899,12 @@
                             text-anchor: middle;
                             opacity: 0.7;
                           }
-                    
+                       
                           .bracket {
                             fill: currentColor;
                             font-weight: 700;
                           }
-                    
+                       
                           .glitch-line {
                             fill: #FF3333; /* 這條線維持紅色，不隨 hover 變色，作為點綴 */
                             transform-box: fill-box;
@@ -882,16 +913,16 @@
                           }
                         </style>
                       </defs>
-                    
+                       
                       <!-- 1. 主標題 (位置微調以適應新的 viewBox) -->
                       <text x="50%" y="280" class="brand-text">SAMANTHA</text>
-                    
+                       
                       <!-- 2. 副標題 -->
                       <g transform="translate(300, 320)"> <!-- 移到水平中心 -->
                         <text x="0" y="0" class="code-text">
                           <tspan class="bracket">[</tspan> SOFT_CODE <tspan class="bracket">]</tspan>
                         </text>
-                        
+                         
                         <!-- 3. 紅色呼吸底線 -->
                         <rect x="-110" y="10" width="220" height="3" class="glitch-line" />
                       </g>
@@ -901,7 +932,7 @@
                 <!-- Full Screen Navigation Overlay -->
                 <div id="nav-overlay">
                     <button id="close-nav-btn">[ CLOSE_SYSTEM ]</button>
-                    <div id="nav-links-container" class="flex flex-col items-center">
+                    <div id="nav-links-container">
                         <!-- JS Generated Links -->
                     </div>
                 </div>
@@ -1106,7 +1137,7 @@
         <!-- Footer / Creator Credit -->
         <footer class="border-t border-dashed border-gray-400 py-6 mt-12 text-center font-mono text-[10px] text-gray-500">
             <div class="mb-2">
-                SYSTEM_VER_2.0 // DEVELOPED_BY <a href="#" class="text-black hover:text-[#FF3333] transition-colors border-b border-gray-400 hover:border-[#FF3333]">[ SAMANTHA PAN ]</a>
+                SYSTEM_VER_2.1 // DEVELOPED_BY <a href="#" class="text-black hover:text-[#FF3333] transition-colors border-b border-gray-400 hover:border-[#FF3333]">[ SAMANTHA PAN ]</a>
             </div>
             <div>
                 © 2024 SAMANTHA_ARCHIVE. ALL RIGHTS RESERVED.
@@ -1134,14 +1165,28 @@
 
             <!-- Cart Footer / Checkout -->
             <div class="p-6 border-t border-black bg-gray-50">
-                <div class="flex justify-between font-mono text-sm mb-4">
+                <!-- NEW: Customer Input Fields -->
+                <div class="mb-4 space-y-3">
+                    <div class="flex flex-col gap-1">
+                        <label for="customer-name" class="font-mono text-xs font-bold text-gray-500">暱稱 / NICKNAME <span class="text-red-500">*</span></label>
+                        <input type="text" id="customer-name" placeholder="請輸入您的暱稱" 
+                            class="w-full bg-white border border-black p-2 font-mono text-sm focus:outline-none focus:ring-1 focus:ring-red-500 rounded-none placeholder-gray-400">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label for="customer-email" class="font-mono text-xs font-bold text-gray-500">電子信箱 / EMAIL <span class="text-red-500">*</span></label>
+                        <input type="email" id="customer-email" placeholder="example@mail.com" 
+                            class="w-full bg-white border border-black p-2 font-mono text-sm focus:outline-none focus:ring-1 focus:ring-red-500 rounded-none placeholder-gray-400">
+                    </div>
+                </div>
+
+                <div class="flex justify-between font-mono text-sm mb-4 pt-2 border-t border-dashed border-gray-300">
                     <span>TOTAL_CALC:</span>
                     <span id="cart-total" class="font-bold">NT$ 0</span>
                 </div>
                 <!-- 結帳按鈕文字更新 -->
                 <button id="checkout-btn"
                     class="w-full py-3 bg-black text-white font-mono hover:bg-[#FF3333] transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed uppercase font-bold text-sm tracking-wider">
-                    [ SEND TO GOOGLE FORM ]
+                    [ SEND TO 賣貨便 ]
                 </button>
                 <p class="text-[10px] text-gray-500 mt-2 font-mono text-center leading-tight">
                     * 點擊後跳轉至訂單表單，請確認資料後提交。
@@ -1150,17 +1195,7 @@
         </div>
     </div>
 
-    <script>
-        // ==========================================
-        // CONFIGURATION (請修改這裡)
-        // ==========================================
-        // 1. 你的 Google 表單網址 (請換成你的)
-        const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/YOUR_FORM_ID_HERE/viewform";
-
-        // 2. 你的「訂單內容」欄位 ID (請換成你的)
-        // 在 Google 表單「取得預填連結」中找到 &entry.xxxxxxx=...
-        const ORDER_FIELD_ID = "entry.123456789";
-
+    <script> 
         // ==========================================
         // PART 1: DATAMATICS PARTICLE ENGINE
         // ==========================================
@@ -1189,6 +1224,9 @@
         }
 
         function createTargetPixels() {
+            // Safety check for 0 dimensions
+            if (!width || !height || width <= 0 || height <= 0) return [];
+
             const tempCanvas = document.createElement('canvas');
             const tCtx = tempCanvas.getContext('2d');
             tCtx.canvas.willReadFrequently = true;
@@ -1383,6 +1421,7 @@
             if (currentState === STATE.END) return;
             currentState = STATE.FADEOUT;
             overlay.style.opacity = '0';
+            overlay.style.pointerEvents = 'none'; // FIX: 立即讓滑鼠穿透
             skipBtn.style.opacity = '0';
             siteWrapper.style.opacity = '1';
             canvas.style.opacity = '0';
@@ -1691,6 +1730,7 @@
         function updateCartUI() {
             const container = document.getElementById('cart-items-container');
             const countSpan = document.getElementById('cart-count');
+            const countSpanMobile = document.getElementById('cart-count-mobile');
             const totalSpan = document.getElementById('cart-total');
             const checkoutBtn = document.getElementById('checkout-btn');
 
@@ -1735,6 +1775,7 @@
             }
 
             countSpan.textContent = totalQty;
+            if (countSpanMobile) countSpanMobile.textContent = totalQty;
             totalSpan.textContent = `NT$ ${totalPrice.toLocaleString()}`;
         }
 
@@ -1750,50 +1791,114 @@
             playBleep('A4', '64n');
         }
 
-        // --- NEW CHECKOUT LOGIC FOR GOOGLE FORM ---
-        function processCheckout() {
+        // --- NEW CHECKOUT LOGIC WITH INPUT VALIDATION ---
+        function  processCheckout() {
             if (cart.length === 0) return;
 
-            // 1. Generate Order Text
+            // 1. Get User Input
+            const nameInput = document.getElementById('customer-name');
+            const emailInput = document.getElementById('customer-email');
+            
+            const name = nameInput.value.trim();
+            const email = emailInput.value.trim();
+
+            // 2. Validation Check
+            if (!name || !email) {
+                alert("[ ERROR: MISSING_DATA ]\n\n請填寫「暱稱」與「電子信箱」以利訂單聯絡！");
+                
+                // Highlight empty fields
+                if(!name) nameInput.classList.add('ring-2', 'ring-red-500');
+                if(!email) emailInput.classList.add('ring-2', 'ring-red-500');
+                
+                // Play Error Sound
+                playBleep('C3', '8n');
+                return;
+            }
+
+            // Remove highlight if valid
+            nameInput.classList.remove('ring-2', 'ring-red-500');
+            emailInput.classList.remove('ring-2', 'ring-red-500');
+
+            // 3. Generate Order Text
             let orderText = `【 SAMANTHA | 訂單請求 】\n`;
             orderText += `--------------------------------\n`;
+            orderText += `👤 訂購人: ${name}\n`;
+            orderText += `📮 聯絡信箱: ${email}\n`;
+            orderText += `--------------------------------\n`;
+            
             cart.forEach(item => {
                 orderText += `■ ${item.name}\n`;
                 orderText += `  規格: ${item.variation} x ${item.qty}\n`;
                 orderText += `  小計: $${item.price * item.qty}\n`;
                 orderText += `--------------------------------\n`;
+                console.log(item.productId);
             });
             const totalPrice = document.getElementById('cart-total').textContent;
             orderText += `\n💰 總金額: ${totalPrice}\n`;
             orderText += `🕒 時間: ${new Date().toLocaleString()}`; 
-            // 4. Redirect
-            const conf = confirm("即將跳轉至訂單確認表單。\n\n系統已自動填寫購物車內容，請補充您的聯絡資訊以利我們寄送賣場連結。");
-            if (conf) {
-                window.open('https://myship.7-11.com.tw/general/detail/GM2512220617253', '_blank');
-                cart = [];
-                updateCartUI();
-                toggleCart(); 
-            }
+            
+            // 4. Redirect & Copy
+            // Copy to clipboard for user convenience
+            navigator.clipboard.writeText(orderText).then(async() => {
+                const conf = confirm("資料驗證成功！訂單內容已自動複製。\n\n即將跳轉至 7-11 賣場，請在備註欄貼上訂單資訊，或直接結帳。");
+                if (conf) {
+                    
+
+                    try {
+                        const response = await fetch('https://order.cyberspacee.workers.dev/', {
+                        method: 'POST',
+                        body: JSON.stringify({
+                            customId: name, // 這是主要 Key
+                            email:email,
+                            amount: totalPrice,
+                            items: orderText,
+                            timestamp: Date.now()
+                        })
+                        });
+                        
+                        // 3. 關鍵體驗：幫他複製這個「自訂 ID」
+                        await navigator.clipboard.writeText(customId);
+
+                        // 4. 引導去賣貨便
+                        const go = confirm(
+                        `✅ 訂單已建立！\n` +
+                        `您的取貨暱稱是：【 ${customId} 】(已幫您複製)\n\n` +
+                        `請前往賣貨便結帳：\n` +
+                        `1. 數量改為 ${email}\n` +
+                        `2. 在「備註欄」貼上暱稱 (這是唯一核對方式！)`
+                        );
+
+                        if (go) {
+                            window.open('https://myship.7-11.com.tw/general/detail/GM2512220617253', '_blank');
+                            cart = [];
+                            updateCartUI();
+                            toggleCart(); 
+                            // Clear inputs
+                            nameInput.value = '';
+                            emailInput.value = '';
+                        }
+
+                    } catch (err) { /* Error handling */ }
+                 
+                }
+            }).catch(err => {
+                // Fallback if clipboard fails
+                const conf = confirm("即將跳轉至訂單確認表單，請確認資料後提交。");
+                if (conf) {
+                    window.open('https://myship.7-11.com.tw/general/detail/GM2512220617253', '_blank');
+                    cart = [];
+                    updateCartUI();
+                    toggleCart(); 
+                }
+            }); 
         }
 
         // ==========================================
         // PART 4: APP LOGIC
         // ==========================================
 
-        function initApp() {
-            const logContainer = document.getElementById('system-log-container');
-            if (logContainer) {
-                logContainer.innerHTML = `
-                    <div class="log-item"><span class="log-date">2025.11.30</span><span class="log-category">[ N E W ]</span><span class="log-content">內褲兔車長吊飾數據載入完成。</span></div>
-                    <div class="log-item"><span class="log-date">2025.11.28</span><span class="log-category">[ UPDATE ]</span><span class="log-content">系統 Ver 1.0.3 上線，優化圖像濾波。</span></div>
-                    <div class="log-item"><span class="log-date">2025.11.25</span><span class="log-category">[ CHI I KAWA ]</span><span class="log-content">吉伊卡哇伏見稻荷系列入庫。</span></div>
-                `;
-            }
-
-            renderNavigationLinks(categoryData);
-            renderLandingPage(categoryData);
-
-            // New Menu Logic for Overlay
+        function initInterface() {
+            // 1. Menu Logic
             const menuToggle = document.getElementById('menu-toggle');
             const navOverlay = document.getElementById('nav-overlay');
             const closeNavBtn = document.getElementById('close-nav-btn');
@@ -1801,17 +1906,33 @@
             if (menuToggle && navOverlay && closeNavBtn) {
                 menuToggle.addEventListener('click', () => {
                     navOverlay.classList.add('active');
+                    // Add lock scroll to body
+                    document.body.classList.add('no-scroll');
                     playBleep('C6', '32n');
                 });
-                closeNavBtn.addEventListener('click', () => {
+                const closeMenu = () => {
                     navOverlay.classList.remove('active');
+                    // Remove lock scroll from body
+                    document.body.classList.remove('no-scroll');
                     playBleep('G5', '32n');
+                };
+                closeNavBtn.addEventListener('click', closeMenu);
+                // NEW: Close on background click
+                navOverlay.addEventListener('click', (e) => {
+                    if (e.target === navOverlay) {
+                        closeMenu();
+                    }
                 });
             }
 
+            // 2. Cart Logic
+            initCart();
+
+            // 3. Back Button
             const backToGrid = document.getElementById('back-to-grid');
             if (backToGrid) backToGrid.addEventListener('click', () => showProductGrid('all'));
 
+            // 4. Add to Cart Button (Static)
             const addToCartBtn = document.querySelector('.add-to-cart');
             if (addToCartBtn) {
                 addToCartBtn.onclick = function () {
@@ -1844,6 +1965,7 @@
                 };
             }
 
+            // 5. Tooltip
             const tooltip = document.getElementById('cursor-tooltip');
             document.addEventListener('mousemove', (e) => {
                 tooltip.style.left = e.clientX + 'px';
@@ -1857,10 +1979,24 @@
                     tooltip.style.opacity = '0';
                 }
             });
-            initCart();
+        }
+
+        function initApp() {
+            const logContainer = document.getElementById('system-log-container');
+            if (logContainer) {
+                logContainer.innerHTML = `
+                    <div class="log-item"><span class="log-date">2025.11.30</span><span class="log-category">[ N E W ]</span><span class="log-content">內褲兔車長吊飾數據載入完成。</span></div>
+                    <div class="log-item"><span class="log-date">2025.11.28</span><span class="log-category">[ UPDATE ]</span><span class="log-content">系統 Ver 1.0.3 上線，優化圖像濾波。</span></div>
+                    <div class="log-item"><span class="log-date">2025.11.25</span><span class="log-category">[ CHI I KAWA ]</span><span class="log-content">吉伊卡哇伏見稻荷系列入庫。</span></div>
+                `;
+            }
+
+            renderNavigationLinks(categoryData);
+            renderLandingPage(categoryData);
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            initInterface(); // FIX: Initialize UI events immediately
             fetchData();
         });
 
@@ -1883,6 +2019,7 @@
                 playBleep('G4', '64n');
                 showLandingPage();
                 document.getElementById('nav-overlay').classList.remove('active');
+                document.body.classList.remove('no-scroll');
             };
             navLinksContainer.appendChild(homeLink);
 
@@ -1898,15 +2035,16 @@
                     playBleep('G4', '64n');
                     showProductGrid(mainCategory);
                     document.getElementById('nav-overlay').classList.remove('active');
+                    document.body.classList.remove('no-scroll');
                 };
                 navLinksContainer.appendChild(link);
                 counter++;
             });
         }
-        // ==========================================
+               // ==========================================
         // ARTWORK DATABASE
         // ==========================================
-       const artworks = [
+        const artworks = [
            {
                 id: "ERR_07",
                 title: "Tainan Weekend Night's Tipsy Paradise / 台南週末夜的微醺天堂",

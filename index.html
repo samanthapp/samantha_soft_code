@@ -1857,12 +1857,12 @@
                         });
                         
                         // 3. 關鍵體驗：幫他複製這個「自訂 ID」
-                        await navigator.clipboard.writeText(customId);
+                        await navigator.clipboard.writeText(name);
 
                         // 4. 引導去賣貨便
                         const go = confirm(
                         `✅ 訂單已建立！\n` +
-                        `您的取貨暱稱是：【 ${customId} 】(已幫您複製)\n\n` +
+                        `您的取貨暱稱是：【 ${name} 】(已幫您複製)\n\n` +
                         `請前往賣貨便結帳：\n` +
                         `1. 數量改為 ${email}\n` +
                         `2. 在「備註欄」貼上暱稱 (這是唯一核對方式！)`

@@ -1910,7 +1910,12 @@
                         });
                         
                         // 3. 關鍵體驗：幫他複製這個「自訂 ID」
-                        await navigator.clipboard.writeText(name);
+                        // 直接執行複製，不管它什麼時候做完，不加 await
+                        navigator.clipboard.writeText(name).then(() => {
+                            console.log('複製成功 (背景執行)');
+                        }).catch(err => {
+                            console.log('複製失敗，但不影響跳轉', err);
+                        });
 
                         // 4. 引導去賣貨便
                         const go = confirm(
@@ -1921,8 +1926,8 @@
                         `2. 在「備註欄」貼上暱稱 (這是唯一核對方式！)`
                         );
 
-                        if (go) {                            
-                            window.location.href='https://myship.7-11.com.tw/general/detail/GM2512220617253';
+                        if (go) { 
+                            window.open('https://myship.7-11.com.tw/general/detail/GM2512220617253', '_blank');
                             cart = [];
                             updateCartUI();
                             toggleCart(); 

@@ -1148,19 +1148,11 @@
                     <div id="char-btn-group" class="flex flex-wrap gap-2"></div>
                 </div>
 
-                <!-- 2. 品項篩選 (通用) -->
-                <div id="filter-row-type" class="flex flex-wrap items-center gap-2">
-                    <span class="font-mono text-[10px] text-gray-400 w-16">TYPE ::</span>
-                    <button onclick="toggleFilter('type', '')"
-                        class="filter-btn px-3 py-1 text-xs rounded-full">全部</button>
-                    <button onclick="toggleFilter('type', '吊飾')"
-                        class="filter-btn px-3 py-1 text-xs rounded-full">吊飾/鑰匙圈</button>
-                    <button onclick="toggleFilter('type', '娃娃')"
-                        class="filter-btn px-3 py-1 text-xs rounded-full">娃娃/玩偶</button>
-                    <button onclick="toggleFilter('type', '文具')"
-                        class="filter-btn px-3 py-1 text-xs rounded-full">文具/貼紙</button>
-                    <button onclick="toggleFilter('type', '生活')"
-                        class="filter-btn px-3 py-1 text-xs rounded-full">生活/雜貨</button>
+                <!-- 2. 品項篩選 (由 JS 動態依品牌 major_category 產生) -->
+                <div id="filter-row-type" class="flex flex-wrap items-center gap-2 hidden">
+                    <span class="font-mono text-[10px] text-gray-400 w-16">CAT ::</span>
+                    <!-- JS 動態生成按鈕 -->
+                    <div id="type-btn-group" class="flex flex-wrap gap-2"></div>
                 </div>
             </div>
             <div class="product-grid-container hidden" id="product-grid-container">
@@ -2182,7 +2174,9 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
-            initInterface(); // FIX: Initialize UI events immediately
+            // 初始化頁面 state（replace 不新增歷史）
+            history.replaceState({ view: 'landing' }, '', '#');
+            initInterface();
             fetchData();
         });
 
@@ -2498,10 +2492,44 @@
             container.innerHTML = htmlContent;
         }
 
-        function showProductDetail(id) {
+        // ==========================================
+        // BROWSER HISTORY MANAGEMENT
+        // ==========================================
+        function pushState(state) {
+            history.pushState(state, '', '#');
+        }
+
+        window.addEventListener('popstate', (e) => {
+            const state = e.state;
+            if (!state) {
+                restoreState({ view: 'landing' });
+            } else {
+                restoreState(state);
+            }
+        });
+
+        function restoreState(state) {
+            if (!state) return;
+            if (state.view === 'landing') {
+                showLandingPage(true);
+            } else if (state.view === 'grid') {
+                showProductGrid(state.zone || 'all', true);
+            } else if (state.view === 'detail') {
+                currentZone = state.zone || 'all';
+                activeFilters = state.filters || { character: null, type: null };
+                setupFilterBar(currentZone);
+                updateFilterBtnStyles();
+                showProductDetail(state.productId, true);
+            }
+        }
+
+        function showProductDetail(id, fromHistory = false) {
             playBleep('D5', '64n');
             const product = allProducts.find(p => p.product_id === id);
             if (!product) return;
+            if (!fromHistory) {
+                pushState({ view: 'detail', productId: id, zone: currentZone, filters: { ...activeFilters } });
+            }
             const mainImage = document.getElementById('detail-main-image');
             const productidSpan = document.getElementById('product_id');
             const detailName = document.getElementById('detail-name');
@@ -2586,11 +2614,13 @@
             document.getElementById('product-detail-view').classList.remove('hidden');
         }
 
-        function showProductGrid(mainCategory = 'all') {
-            console.log(mainCategory);
+        function showProductGrid(mainCategory = 'all', fromHistory = false) {
             currentZone = mainCategory;
-            // 每次切換專區時，重置篩選器
-            activeFilters = { character: null, type: null };
+            if (!fromHistory) {
+                // 重置篩選器，並 push state
+                activeFilters = { character: null, type: null };
+                pushState({ view: 'grid', zone: mainCategory });
+            }
             updateFilterBtnStyles();
             setupFilterBar(currentZone);
 
@@ -2605,18 +2635,15 @@
             document.getElementById('landing-view').classList.add('hidden');
             document.getElementById('product-detail-view').classList.add('hidden');
             document.getElementById('product-grid-container').classList.remove('hidden');
-            // Hide Work View
             const workView = document.getElementById('work-view');
             if (workView) workView.classList.add('hidden');
 
-            // 重要：切換到新的 applyFilters
             applyFilters();
         }
 
-        function showLandingPage() {
+        function showLandingPage(fromHistory = false) {
             document.getElementById('product-grid-container').classList.add('hidden');
             document.getElementById('product-detail-view').classList.add('hidden');
-            // Hide Work View
             const workView = document.getElementById('work-view');
             if (workView) workView.classList.add('hidden');
 
@@ -2627,20 +2654,27 @@
                 mainTitle.textContent = "【 // CURATED ARCHIVE 】";
                 mainTitle.style.color = '#000';
             }
+            if (!fromHistory) {
+                pushState({ view: 'landing' });
+            }
         }
         // 3. 設定篩選列按鈕
         function setupFilterBar(zoneName) {
             const charRow = document.getElementById('filter-row-character');
             const charBtnGroup = document.getElementById('char-btn-group');
+            const typeRow = document.getElementById('filter-row-type');
+            const typeBtnGroup = document.getElementById('type-btn-group');
 
             // 清空舊按鈕
             charBtnGroup.innerHTML = '';
+            typeBtnGroup.innerHTML = '';
+
             // 重置所有按鈕樣式
             document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
 
-            if (zoneName === '三麗鷗 (Sanrio)') { // 修正為完整的品牌名稱以匹配 currentZone
+            // --- 角色篩選（僅三麗鷗）---
+            if (zoneName === '三麗鷗 (Sanrio)') {
                 charRow.classList.remove('hidden');
-                // 動態產生三麗鷗角色按鈕
                 const chars = ['酷洛米', '大耳狗', '美樂蒂', 'Hello Kitty', '漢頓', '帕恰狗'];
                 chars.forEach(char => {
                     const btn = document.createElement('button');
@@ -2650,18 +2684,57 @@
                     charBtnGroup.appendChild(btn);
                 });
             } else {
-                // 內褲兔不需要角色篩選
                 charRow.classList.add('hidden');
+            }
+
+            // --- 品類篩選：從該品牌的 major_category 動態產生，去重 ---
+            if (zoneName && zoneName !== 'all') {
+                // 收集該品牌下所有不重複的 major_category
+                const cats = [...new Set(
+                    allProducts
+                        .filter(p => {
+                            const b = p.category_main || p.brand || '';
+                            return b.includes(zoneName) || zoneName.includes(b.split(' ')[0]);
+                        })
+                        .map(p => p.category_sub)
+                        .filter(Boolean)
+                )].sort();
+
+                if (cats.length > 1) {
+                    typeRow.classList.remove('hidden');
+
+                    // 全部按鈕
+                    const allBtn = document.createElement('button');
+                    allBtn.className = 'filter-btn px-3 py-1 text-xs rounded-full active';
+                    allBtn.textContent = '全部';
+                    allBtn.dataset.val = '';
+                    allBtn.onclick = () => toggleFilter('type', null);
+                    typeBtnGroup.appendChild(allBtn);
+
+                    cats.forEach(cat => {
+                        const btn = document.createElement('button');
+                        btn.className = 'filter-btn px-3 py-1 text-xs rounded-full';
+                        btn.textContent = cat;
+                        btn.dataset.val = cat;
+                        btn.onclick = () => toggleFilter('type', cat);
+                        typeBtnGroup.appendChild(btn);
+                    });
+                } else {
+                    // 只有一種分類，不需要篩選列
+                    typeRow.classList.add('hidden');
+                }
+            } else {
+                typeRow.classList.add('hidden');
             }
         }
 
         // 4. 切換篩選條件
         function toggleFilter(category, value) {
-            // Toggle Logic
-            if (activeFilters[category] === value) {
-                activeFilters[category] = null; // 取消
+            // 如果傳入 null（全部按鈕）或重複點選同值，則取消
+            if (value === null || activeFilters[category] === value) {
+                activeFilters[category] = null;
             } else {
-                activeFilters[category] = value; // 選取
+                activeFilters[category] = value;
             }
 
             updateFilterBtnStyles();
@@ -2680,12 +2753,13 @@
                 }
             });
 
-            // 處理靜態的類型按鈕 (注意：這裡用包含匹配，因為按鈕文字可能是 "吊飾/鑰匙圈")
-            const typeBtns = document.querySelectorAll('#filter-row-type .filter-btn');
+            // 處理動態生成的類型按鈕
+            const typeBtns = document.querySelectorAll('#type-btn-group .filter-btn');
             typeBtns.forEach(btn => {
-                // 取得按鈕核心關鍵字 (假設是按鈕文字的前兩個字，或是直接 data-val 比較好，但這裡為了簡單直接比對)
-                // 簡單作法：如果 activeFilters.type 不為空，且按鈕文字包含它
-                if (activeFilters.type && btn.textContent.includes(activeFilters.type)) {
+                const val = btn.dataset.val || '';
+                if (val === '' && !activeFilters.type) {
+                    btn.classList.add('active'); // 「全部」active 狀態
+                } else if (val && val === activeFilters.type) {
                     btn.classList.add('active');
                 } else {
                     btn.classList.remove('active');
@@ -2716,10 +2790,10 @@
                     if (!tags.includes(activeFilters.character) && !name.includes(activeFilters.character)) return false;
                 }
 
-                // C. Type Filter
+                // C. Type Filter (完全比對 major_category)
                 if (activeFilters.type) {
                     const k = activeFilters.type;
-                    const typeMatch = tags.some(t => t.includes(k)) || name.includes(k) || cat.includes(k);
+                    const typeMatch = (p.category_sub || '').includes(k) || (p.product_category || '').includes(k);
                     if (!typeMatch) return false;
                 }
 

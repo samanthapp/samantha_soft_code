@@ -1,0 +1,1182 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>商品分類管理工具</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@300;400;500;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg: #0f0f13;
+    --surface: #18181f;
+    --surface2: #22222c;
+    --surface3: #2a2a38;
+    --border: #2e2e3e;
+    --accent: #7c6af7;
+    --accent2: #a78bfa;
+    --accent-dim: rgba(124,106,247,0.15);
+    --text: #e8e8f0;
+    --text-dim: #7b7b99;
+    --text-muted: #4a4a60;
+    --success: #34d399;
+    --warn: #fbbf24;
+    --drag-over: rgba(124,106,247,0.25);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    overflow: hidden;
+  }
+
+  /* ── BRAND SCREEN (HOME) ── */
+  #brand-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-height: 100vh;
+    padding: 48px 24px;
+    background: radial-gradient(ellipse at 50% 0%, rgba(124,106,247,0.12) 0%, transparent 60%);
+  }
+
+  .brand-header {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .brand-header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    background: linear-gradient(135deg, #e8e8f0 30%, #a78bfa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .brand-header p {
+    color: var(--text-dim);
+    margin-top: 8px;
+    font-size: 0.9rem;
+  }
+
+  /* 雙視角切換器 */
+  .view-tabs {
+    display: flex;
+    background: var(--surface2);
+    padding: 4px;
+    border-radius: 8px;
+    margin: 0 auto 32px auto;
+    width: 100%;
+    max-width: 320px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: var(--text-dim);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: all 0.2s;
+  }
+  .tab-btn.active {
+    background: var(--surface);
+    color: var(--accent2);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  }
+
+  .brand-search {
+    width: 100%;
+    max-width: 480px;
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .brand-search input {
+    width: 100%;
+    padding: 12px 16px 12px 44px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.95rem;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .brand-search input:focus { border-color: var(--accent); }
+  .brand-search .icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: var(--text-dim); font-size: 16px;
+  }
+
+  .brand-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px;
+    width: 100%;
+    max-width: 900px;
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    padding: 4px;
+  }
+  .brand-grid::-webkit-scrollbar { width: 4px; }
+  .brand-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .brand-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 18px 16px;
+    cursor: pointer;
+    transition: all 0.18s;
+    position: relative;
+    overflow: hidden;
+  }
+  .brand-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    opacity: 0; transition: opacity 0.18s;
+  }
+  .brand-card:hover { border-color: var(--accent); transform: translateY(-2px); background: var(--surface2); }
+  .brand-card:hover::before { opacity: 1; }
+
+  .brand-card .brand-name {
+    font-size: 0.95rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    word-break: break-all;
+  }
+  .brand-card .brand-count {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* ── EDITOR SCREEN ── */
+  #editor-screen {
+    display: none;
+    flex-direction: column;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+
+  .editor-topbar {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .back-btn {
+    display: flex; align-items: center; gap: 6px;
+    padding: 7px 14px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dim);
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85rem;
+    transition: all 0.15s;
+  }
+  .back-btn:hover { border-color: var(--accent); color: var(--text); }
+
+  .topbar-brand {
+    font-weight: 700;
+    font-size: 1.1rem;
+    flex: 1;
+  }
+  .topbar-brand span { color: var(--accent2); }
+
+  .save-btn {
+    display: flex; align-items: center; gap: 7px;
+    padding: 8px 20px;
+    background: var(--accent);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .save-btn:hover { background: var(--accent2); transform: translateY(-1px); }
+
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 20px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    flex-wrap: wrap;
+  }
+  .filter-label { font-size: 0.8rem; color: var(--text-dim); margin-right: 4px; }
+  .filter-chip {
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    font-family: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.12s;
+    white-space: nowrap;
+  }
+  .filter-chip:hover { border-color: var(--accent); color: var(--text); }
+  .filter-chip.active { background: var(--accent-dim); border-color: var(--accent); color: var(--accent2); }
+  .filter-search {
+    margin-left: auto;
+    padding: 5px 12px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.85rem;
+    outline: none;
+    width: 200px;
+    transition: border-color 0.15s;
+  }
+  .filter-search:focus { border-color: var(--accent); }
+
+  .editor-body {
+    display: flex;
+    flex: 1;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  /* Left panel */
+  .product-list-panel {
+    width: 380px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid var(--border);
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .panel-header {
+    padding: 12px 16px;
+    font-size: 0.78rem;
+    color: var(--text-dim);
+    font-family: 'DM Mono', monospace;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .product-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+  }
+  .product-list::-webkit-scrollbar { width: 4px; }
+  .product-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .product-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 10px;
+    border-radius: 8px;
+    cursor: grab;
+    transition: background 0.12s;
+    border: 1px solid transparent;
+    margin-bottom: 4px;
+    position: relative;
+  }
+  .product-item:hover { background: var(--surface2); border-color: var(--border); }
+  .product-item.dragging { opacity: 0.4; cursor: grabbing; }
+
+  .product-thumb {
+    width: 44px; height: 44px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+  }
+
+  .product-info { flex: 1; min-width: 0; }
+  .product-name {
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.3;
+    margin-bottom: 4px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .product-tags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .tag {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-family: 'DM Mono', monospace;
+  }
+  .tag-cat { background: rgba(167,139,250,0.15); color: var(--accent2); }
+  .tag-sub { background: rgba(52,211,153,0.1); color: var(--success); }
+
+  /* Right panel - categories */
+  .categories-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 0;
+    min-width: 0;
+  }
+
+  .cat-panel-inner {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: visible;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 0;
+  }
+  .cat-panel-inner::-webkit-scrollbar { width: 4px; }
+  .cat-panel-inner::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+  .category-zone {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: visible;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .category-zone.drag-over {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-dim);
+  }
+
+  .cat-zone-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: var(--surface2);
+    border-bottom: 1px solid var(--border);
+    border-radius: 12px 12px 0 0;
+    cursor: pointer;
+  }
+  .cat-zone-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .cat-count {
+    font-size: 0.75rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--text-dim);
+  }
+
+  .delete-cat-btn {
+    padding: 3px 8px;
+    background: transparent;
+    border: 1px solid rgba(255,100,100,0.3);
+    border-radius: 5px;
+    color: rgba(255,100,100,0.6);
+    font-size: 0.7rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.12s;
+  }
+  .delete-cat-btn:hover { border-color: #f87171; color: #f87171; }
+
+  .cat-zone-body {
+    min-height: 52px;
+    padding: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-content: flex-start;
+    overflow: visible;
+    border-radius: 0 0 12px 12px;
+  }
+
+  .cat-product-chip {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 8px 4px 4px;
+    background: var(--surface3);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.78rem;
+    max-width: 220px;
+    cursor: pointer;
+    transition: border-color 0.12s, background 0.12s;
+    position: relative;
+    pointer-events: none;
+  }
+  body.not-dragging .cat-product-chip { pointer-events: auto; }
+  .cat-product-chip:hover { border-color: var(--accent); background: var(--surface2); }
+
+  .chip-arrow {
+    font-size: 10px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+  }
+
+  .chip-menu {
+    display: none;
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    min-width: 160px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+    z-index: 100;
+    overflow: hidden;
+  }
+  .chip-menu.open { display: block; }
+  .chip-menu-label {
+    padding: 6px 12px 4px;
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    font-family: 'DM Mono', monospace;
+  }
+  .chip-menu-item {
+    padding: 7px 14px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.1s;
+  }
+  .chip-menu-item:hover { background: var(--accent-dim); color: var(--accent2); }
+  .chip-menu-sep { height: 1px; background: var(--border); margin: 4px 0; }
+  .chip-menu-remove { color: rgba(248,113,113,0.8); }
+  .chip-menu-remove:hover { background: rgba(248,113,113,0.1); color: #f87171; }
+
+  .chip-thumb {
+    width: 100px; height: 100px;
+    border-radius: 3px;
+    object-fit: cover;
+    background: var(--surface2);
+    flex-shrink: 0;
+  }
+  .chip-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+    font-size: 0.72rem;
+  }
+
+  .cat-drop-hint {
+    width: 100%;
+    text-align: center;
+    padding: 12px;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    border: 1.5px dashed var(--border);
+    border-radius: 6px;
+    pointer-events: none;
+    display: none;
+  }
+  .cat-zone.drag-over .cat-drop-hint { display: block; }
+
+  .add-cat-area {
+    margin-top: 4px;
+    flex-shrink: 0;
+  }
+  .add-cat-form {
+    display: flex;
+    gap: 8px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    align-items: center;
+    transition: border-color 0.15s;
+  }
+  .add-cat-form:focus-within { border-color: var(--accent); }
+  .add-cat-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+  }
+  .add-cat-input::placeholder { color: var(--text-muted); }
+  .add-cat-btn {
+    padding: 6px 14px;
+    background: var(--accent);
+    border: none;
+    border-radius: 6px;
+    color: #fff;
+    font-family: inherit;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: background 0.12s;
+  }
+  .add-cat-btn:hover { background: var(--accent2); }
+
+  /* ── CATEGORY REVIEW SCREEN ── */
+  #cat-review-screen {
+    display: none;
+    flex-direction: column;
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+
+  .review-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 16px;
+    padding: 24px;
+    overflow-y: auto;
+    flex: 1;
+    align-content: start;
+  }
+  .review-grid::-webkit-scrollbar { width: 6px; }
+  .review-grid::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  .review-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: transform 0.15s;
+  }
+  .review-card:hover { border-color: var(--accent-dim); transform: translateY(-2px); }
+  .review-card img {
+    width: 100%; height: 140px;
+    object-fit: cover;
+    border-radius: 8px;
+    background: var(--surface2);
+  }
+  .review-brand {
+    font-size: 0.75rem;
+    color: var(--accent2);
+    font-family: 'DM Mono', monospace;
+  }
+  .review-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    flex: 1;
+  }
+  .review-cat-select {
+    width: 100%;
+    padding: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    color: var(--text);
+    font-size: 0.8rem;
+    font-family: inherit;
+    outline: none;
+    cursor: pointer;
+  }
+  .review-cat-select:focus { border-color: var(--accent); }
+  
+  .review-assign-btn {
+    width: 100%;
+    padding: 8px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    color: var(--accent2);
+    font-size: 0.8rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .review-assign-btn:hover { background: var(--accent); color: #fff; }
+
+  /* Toast */
+  .toast {
+    position: fixed;
+    bottom: 24px; right: 24px;
+    padding: 12px 20px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    font-size: 0.9rem;
+    color: var(--text);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+    transform: translateY(20px);
+    opacity: 0;
+    transition: all 0.25s;
+    z-index: 999;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success { border-color: var(--success); }
+
+  .empty-drop-hint {
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    padding: 24px;
+    text-align: center;
+    width: 100%;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    flex: 1;
+    overflow: hidden;
+    max-width: 160px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+</style>
+</head>
+<body class="not-dragging">
+
+<div id="brand-screen">
+  <div class="brand-header">
+    <h1>商品分類管理工具</h1>
+    <p>透過品牌或分類視角，全面整理商品的主要分類</p>
+  </div>
+  
+  <div class="view-tabs">
+    <button class="tab-btn active" id="tab-brand" onclick="switchTab('brand')">📦 品牌視角</button>
+    <button class="tab-btn" id="tab-cat" onclick="switchTab('cat')">🏷️ 分類視角</button>
+  </div>
+
+  <div class="brand-search">
+    <span class="icon">🔍</span>
+    <input type="text" id="home-search-input" placeholder="搜尋品牌…" oninput="filterHome(this.value)">
+  </div>
+  <div class="brand-grid" id="brand-grid"></div>
+</div>
+
+<div id="editor-screen">
+  <div class="editor-topbar">
+    <button class="back-btn" onclick="goBack()">← 返回總覽</button>
+    <div class="topbar-brand">品牌：<span id="current-brand-name"></span></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    <span id="progress-text" style="font-size:0.78rem;color:var(--text-dim);font-family:'DM Mono',monospace;white-space:nowrap"></span>
+    <button class="save-btn" onclick="saveJSON()">💾 存檔</button>
+  </div>
+
+  <div class="filter-bar" id="filter-bar">
+    </div>
+
+  <div class="editor-body">
+    <div class="product-list-panel">
+      <div class="panel-header">
+        <span>商品列表</span>
+        <span id="list-count" style="color:var(--accent2)"></span>
+      </div>
+      <div class="product-list" id="product-list"></div>
+    </div>
+    <div class="categories-panel">
+      <div class="panel-header">
+        <span>主要分類（拖移商品到這裡）</span>
+        <span id="cat-count" style="color:var(--accent2)"></span>
+      </div>
+      <div class="cat-panel-inner" id="cat-panel">
+        <div class="add-cat-area">
+          <div class="add-cat-form">
+            <span style="color:var(--text-muted)">＋</span>
+            <input type="text" class="add-cat-input" id="new-cat-input" placeholder="新增分類…" onkeydown="if(event.key==='Enter')addCategory()">
+            <button class="add-cat-btn" onclick="addCategory()">新增</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="cat-review-screen">
+  <div class="editor-topbar">
+    <button class="back-btn" onclick="closeCategoryReview()">← 返回總覽</button>
+    <div class="topbar-brand">分類檢視：<span id="current-review-cat"></span></div>
+    <span id="review-count" style="font-size:0.8rem;color:var(--text-dim);font-family:'DM Mono',monospace;margin-left:auto;margin-right:16px;"></span>
+    <button class="save-btn" onclick="saveJSON()">💾 存檔</button>
+  </div>
+  <div class="review-grid" id="review-grid">
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════
+// DATA & STATE
+// ═══════════════════════════════════════════
+let allProducts = [];
+let currentBrand = null;
+let brandProducts = [];
+let globalAssignments = {}; 
+let categories = [];
+let filterCat = 'all';
+let draggingId = null;
+
+// 新增狀態：首頁目前的視角
+let currentHomeView = 'brand'; // 'brand' 或 'cat'
+
+// ═══════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════
+async function init() {
+  const res = await fetch('product.json').catch(() => null);
+  if (!res || !res.ok) {
+    showToast('❌ 無法載入 product.json', false);
+    return;
+  }
+  allProducts = await res.json();
+  
+  // 初始化全局分類紀錄
+  allProducts.forEach(p => {
+    globalAssignments[p.product_id] = p.major_category || '';
+  });
+
+  buildGlobalCategories();
+  renderHomeGrid();
+}
+
+// 建立總分類清單 (原始的 + 新增的)
+function buildGlobalCategories() {
+  const allCats = [...new Set(allProducts.map(p => p.major_category).filter(Boolean))];
+  const editedCats = [...new Set(Object.values(globalAssignments).filter(Boolean))];
+  categories = [...new Set([...allCats, ...editedCats])].sort((a,b) => a.localeCompare(b,'zh-TW'));
+}
+
+// ═══════════════════════════════════════════
+// HOME SCREEN (雙視角渲染)
+// ═══════════════════════════════════════════
+function switchTab(view) {
+  currentHomeView = view;
+  document.getElementById('tab-brand').classList.toggle('active', view === 'brand');
+  document.getElementById('tab-cat').classList.toggle('active', view === 'cat');
+  document.getElementById('home-search-input').placeholder = view === 'brand' ? '搜尋品牌…' : '搜尋分類…';
+  document.getElementById('home-search-input').value = '';
+  renderHomeGrid();
+}
+
+function filterHome(val) {
+  renderHomeGrid(val);
+}
+
+function renderHomeGrid(searchTerm = '') {
+  const grid = document.getElementById('brand-grid');
+  const v = searchTerm.trim().toLowerCase();
+
+  if (currentHomeView === 'brand') {
+    // 渲染品牌卡片
+    let filtered = allProducts;
+    if (v) filtered = filtered.filter(p => p.brand.toLowerCase().includes(v));
+    
+    const brandMap = {};
+    filtered.forEach(p => {
+      if (!brandMap[p.brand]) brandMap[p.brand] = 0;
+      brandMap[p.brand]++;
+    });
+    
+    const brands = Object.entries(brandMap).sort((a,b) => a[0].localeCompare(b[0], 'zh-TW'));
+    grid.innerHTML = brands.map(([brand, count]) => `
+      <div class="brand-card" onclick="openBrand('${escapeHtml(brand)}')">
+        <div class="brand-name">${escapeHtml(brand)}</div>
+        <div class="brand-count">${count} 件商品</div>
+      </div>
+    `).join('');
+
+  } else {
+    // 渲染分類卡片
+    buildGlobalCategories();
+    const catMap = {};
+    let unassignedCount = 0;
+    
+    allProducts.forEach(p => {
+      const cat = globalAssignments[p.product_id] || '';
+      if (!cat) unassignedCount++;
+      else {
+        if (!catMap[cat]) catMap[cat] = 0;
+        catMap[cat]++;
+      }
+    });
+    
+    let cats = Object.entries(catMap).sort((a,b) => a[0].localeCompare(b[0], 'zh-TW'));
+    if (v) cats = cats.filter(c => c[0].toLowerCase().includes(v));
+    
+    let html = '';
+    // 如果沒有搜尋，或是搜尋字眼包含「未分類」，就顯示未分類卡片
+    if (!v || '未分類'.includes(v)) {
+      html += `
+      <div class="brand-card" style="border-color:var(--warn); background: rgba(251,191,36,0.05);" onclick="openCategoryReview('')">
+        <div class="brand-name" style="color:var(--warn)">未分類 (Unassigned)</div>
+        <div class="brand-count">${unassignedCount} 件商品</div>
+      </div>`;
+    }
+    
+    html += cats.map(([cat, count]) => `
+      <div class="brand-card" onclick="openCategoryReview('${escapeHtml(cat)}')">
+        <div class="brand-name">${escapeHtml(cat)}</div>
+        <div class="brand-count">${count} 件商品</div>
+      </div>
+    `).join('');
+    
+    grid.innerHTML = html;
+  }
+}
+
+// ═══════════════════════════════════════════
+// CATEGORY REVIEW SCREEN (跨品牌檢視)
+// ═══════════════════════════════════════════
+function openCategoryReview(cat) {
+  document.getElementById('brand-screen').style.display = 'none';
+  document.getElementById('cat-review-screen').style.display = 'flex';
+  
+  const displayCat = cat === '' ? '未分類' : cat;
+  document.getElementById('current-review-cat').textContent = displayCat;
+  document.getElementById('current-review-cat').style.color = cat === '' ? 'var(--warn)' : 'var(--accent2)';
+  
+  renderReviewGrid(cat);
+}
+
+function closeCategoryReview() {
+  document.getElementById('cat-review-screen').style.display = 'none';
+  document.getElementById('brand-screen').style.display = 'flex';
+  renderHomeGrid(document.getElementById('home-search-input').value);
+}
+
+function renderReviewGrid(cat) {
+  buildGlobalCategories();
+  const products = allProducts.filter(p => (globalAssignments[p.product_id] || '') === cat);
+  document.getElementById('review-count').textContent = `共 ${products.length} 件`;
+
+  const grid = document.getElementById('review-grid');
+  if (products.length === 0) {
+    grid.innerHTML = '<div class="empty-drop-hint" style="grid-column: 1/-1;">此分類目前沒有商品</div>';
+    return;
+  }
+
+  // 準備下拉選單的分類選項
+  const availableCats = categories.filter(c => c !== cat && c !== '');
+  let selectOptions = `<option value="" disabled selected>移動至其他分類...</option>`;
+  availableCats.forEach(c => {
+      selectOptions += `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`;
+  });
+  selectOptions += `<option value="REMOVE" style="color:red;">❌ 移除分類 (退回未分類)</option>`;
+
+  grid.innerHTML = products.map(p => {
+    const thumb = (p.images_small && p.images_small[0]) || (p.images && p.images[0]) || '';
+    return `
+    <div class="review-card">
+      ${thumb ? `<img src="${thumb}" onerror="this.style.display='none'">` : '<div style="height:140px;background:var(--surface2);border-radius:8px;"></div>'}
+      <div style="flex:1;">
+        <div class="review-brand">${escapeHtml(p.brand)}</div>
+        <div class="review-name" title="${escapeHtml(p.product_name)}">${escapeHtml(p.product_name)}</div>
+      </div>
+      
+      ${cat !== '' ? `
+        <select class="review-cat-select" onchange="quickReassign('${p.product_id}', this.value, '${escapeHtml(cat)}')">
+          ${selectOptions}
+        </select>
+      ` : `
+        <button class="review-assign-btn" onclick="jumpToBrand('${escapeHtml(p.brand)}')">去品牌整理 ➔</button>
+      `}
+    </div>
+    `;
+  }).join('');
+}
+
+function quickReassign(pid, newCat, currentCat) {
+  if (!newCat) return;
+  if (newCat === 'REMOVE') {
+     globalAssignments[pid] = '';
+     showToast('退回未分類', true);
+  } else {
+     globalAssignments[pid] = newCat;
+     showToast(`已移動至 ${newCat}`, true);
+  }
+  // 重新渲染當前畫面 (該商品會消失)
+  renderReviewGrid(currentCat);
+}
+
+function jumpToBrand(brand) {
+  document.getElementById('cat-review-screen').style.display = 'none';
+  openBrand(brand);
+}
+
+// ═══════════════════════════════════════════
+// BRAND EDITOR SCREEN
+// ═══════════════════════════════════════════
+function openBrand(brand) {
+  currentBrand = brand;
+  brandProducts = allProducts.filter(p => p.brand === brand);
+  buildGlobalCategories();
+
+  document.getElementById('current-brand-name').textContent = brand;
+  document.getElementById('brand-screen').style.display = 'none';
+  document.getElementById('editor-screen').style.display = 'flex';
+
+  filterCat = 'all';
+  buildFilterBar();
+  renderProductList();
+  renderCategories();
+  updateProgress();
+}
+
+function goBack() {
+  document.getElementById('editor-screen').style.display = 'none';
+  document.getElementById('brand-screen').style.display = 'flex';
+  renderHomeGrid(document.getElementById('home-search-input').value);
+}
+
+function buildFilterBar() {
+  const bar = document.getElementById('filter-bar');
+  const subCats = [...new Set(brandProducts.map(p => p.major_category).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'zh-TW'));
+  bar.innerHTML = `<span class="filter-label">原始分類篩選：</span>
+    <button class="filter-chip ${filterCat==='all'?'active':''}" onclick="setFilter(this,'all')">全部</button>
+    ${subCats.map(c=>`<button class="filter-chip ${filterCat===c?'active':''}" onclick="setFilter(this,'${escapeHtml(c)}')">${escapeHtml(c)}</button>`).join('')}
+    <input type="text" class="filter-search" id="product-search" placeholder="搜尋商品…" oninput="renderProductList()">`;
+}
+
+function setFilter(btn, cat) {
+  filterCat = cat;
+  document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderProductList();
+}
+
+function renderProductList() {
+  const search = (document.getElementById('product-search')?.value || '').trim().toLowerCase();
+  let products = brandProducts;
+
+  products = products.filter(p => !globalAssignments[p.product_id]);
+
+  if (filterCat !== 'all') {
+    products = products.filter(p => p.major_category === filterCat);
+  }
+  if (search) {
+    products = products.filter(p => p.product_name.toLowerCase().includes(search));
+  }
+
+  const total = brandProducts.length;
+  const unassigned = brandProducts.filter(p => !globalAssignments[p.product_id]).length;
+  document.getElementById('list-count').textContent = `${unassigned} / ${total} 件未分類`;
+
+  const list = document.getElementById('product-list');
+  if (products.length === 0) {
+    list.innerHTML = '<div class="empty-drop-hint">沒有符合的商品</div>';
+    return;
+  }
+
+  list.innerHTML = products.map(p => {
+    const thumb = (p.images_small && p.images_small[0]) || (p.images && p.images[0]) || '';
+    return `<div class="product-item" draggable="true" data-id="${p.product_id}" ondragstart="dragStart(event,'${p.product_id}')" ondragend="dragEnd(event)">
+      ${thumb ? `<img class="product-thumb" src="${thumb}" onerror="this.style.display='none'">` : '<div class="product-thumb"></div>'}
+      <div class="product-info">
+        <div class="product-name" title="${escapeHtml(p.product_name)}">${escapeHtml(p.product_name)}</div>
+        <div class="product-tags">
+          ${p.major_category ? `<span class="tag tag-cat">${escapeHtml(p.major_category)}</span>` : ''}
+          ${p.sub_category ? `<span class="tag tag-sub">${escapeHtml(p.sub_category)}</span>` : ''}
+        </div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderCategories() {
+  const panel = document.getElementById('cat-panel');
+  const addArea = panel.querySelector('.add-cat-area');
+  panel.querySelectorAll('.category-zone').forEach(el => el.remove());
+
+  categories.forEach(cat => {
+    const assignedProducts = brandProducts.filter(p => globalAssignments[p.product_id] === cat);
+    const zone = document.createElement('div');
+    zone.className = 'category-zone';
+    zone.dataset.cat = cat;
+    zone.innerHTML = `
+      <div class="cat-zone-header" onclick="toggleZone(this)">
+        <div class="cat-zone-name">
+          <span class="zone-toggle">▾</span><span>${escapeHtml(cat)}</span>
+          <span class="cat-count">${assignedProducts.length} 件</span>
+        </div>
+        <button class="delete-cat-btn" onclick="event.stopPropagation();deleteCategory('${escapeHtml(cat)}')">✕ 刪除</button>
+      </div>
+      <div class="cat-zone-body" ondragover="event.preventDefault()" ondragenter="zoneDragEnter(event,this.closest('.category-zone'))" ondragleave="zoneDragLeave(event,this.closest('.category-zone'))" ondrop="zoneDrop(event,'${escapeHtml(cat)}')">
+        ${assignedProducts.length === 0 ? '<div class="empty-drop-hint">拖移商品到這裡</div>' : assignedProducts.map(p => chipHtml(p)).join('')}
+      </div>`;
+    panel.insertBefore(zone, addArea);
+  });
+  document.getElementById('cat-count').textContent = `${categories.length} 個分類`;
+}
+
+function chipHtml(p) {
+  const thumb = (p.images_small && p.images_small[0]) || '';
+  const currentCat = globalAssignments[p.product_id];
+  const otherCats = categories.filter(c => c !== currentCat);
+  const opts = otherCats.map(c => `<div class="chip-menu-item" onclick="event.stopPropagation();reassign('${p.product_id}','${escapeHtml(c)}')">${escapeHtml(c)}</div>`).join('');
+  return `<div class="cat-product-chip" draggable="true" ondragstart="chipDragStart(event,'${p.product_id}')" ondragend="dragEnd(event)" onclick="toggleChipMenu(event,'${p.product_id}')">
+    ${thumb ? `<img class="chip-thumb" src="${thumb}" onerror="this.style.display='none'">` : '<div class="chip-thumb"></div>'}
+    <span class="chip-name">${escapeHtml(p.product_name.substring(0,18))}</span><span class="chip-arrow">▾</span>
+    <div class="chip-menu" id="menu-${p.product_id}" onclick="event.stopPropagation()">
+      <div class="chip-menu-label">移至分類</div>
+      ${opts || '<div class="chip-menu-label">（無其他分類）</div>'}
+      <div class="chip-menu-sep"></div>
+      <div class="chip-menu-item chip-menu-remove" onclick="event.stopPropagation();removeAssignment('${p.product_id}')">✕ 移除分類</div>
+    </div>
+  </div>`;
+}
+
+function toggleChipMenu(e, pid) {
+  e.stopPropagation();
+  document.querySelectorAll('.chip-menu.open').forEach(m => { if (m.id !== 'menu-' + pid) m.classList.remove('open'); });
+  document.getElementById('menu-' + pid)?.classList.toggle('open');
+}
+
+function reassign(productId, newCat) {
+  globalAssignments[productId] = newCat;
+  document.querySelectorAll('.chip-menu.open').forEach(m => m.classList.remove('open'));
+  renderCategories(); renderProductList(); updateProgress();
+}
+
+function chipDragStart(e, productId) {
+  draggingId = productId;
+  e.dataTransfer.effectAllowed = 'move';
+  document.body.classList.remove('not-dragging');
+}
+
+function toggleZone(header) {
+  const body = header.nextElementSibling;
+  const isHidden = body.style.display === 'none';
+  body.style.display = isHidden ? '' : 'none';
+  const arrow = header.querySelector('.zone-toggle');
+  if (arrow) arrow.textContent = isHidden ? '▾' : '▸';
+}
+
+function addCategory() {
+  const input = document.getElementById('new-cat-input');
+  const name = input.value.trim();
+  if (!name) return;
+  if (categories.includes(name)) { showToast('⚠️ 分類已存在'); return; }
+  categories.push(name);
+  categories.sort((a,b) => a.localeCompare(b,'zh-TW'));
+  input.value = '';
+  renderCategories(); updateProgress();
+}
+
+function deleteCategory(cat) {
+  if (!confirm(`確定刪除此品牌下的分類「${cat}」？此品牌中該分類的商品將回到未分類狀態。`)) return;
+  brandProducts.forEach(p => { if (globalAssignments[p.product_id] === cat) globalAssignments[p.product_id] = ''; });
+  categories = categories.filter(c => c !== cat);
+  renderCategories(); renderProductList(); updateProgress();
+}
+
+function removeAssignment(productId) {
+  globalAssignments[productId] = '';
+  renderCategories(); renderProductList(); updateProgress();
+}
+
+// ═══════════════════════════════════════════
+// DRAG & DROP
+// ═══════════════════════════════════════════
+function dragStart(e, productId) {
+  draggingId = productId;
+  e.dataTransfer.effectAllowed = 'move';
+  document.body.classList.remove('not-dragging');
+}
+
+function dragEnd(e) {
+  document.body.classList.add('not-dragging');
+  document.querySelectorAll('.category-zone').forEach(z => z.classList.remove('drag-over'));
+}
+
+function zoneDragEnter(e, zone) { e.preventDefault(); zone.classList.add('drag-over'); }
+function zoneDragLeave(e, zone) { if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over'); }
+
+function zoneDrop(e, cat) {
+  e.preventDefault();
+  const zone = e.currentTarget.closest('.category-zone');
+  zone?.classList.remove('drag-over');
+  if (!draggingId) return;
+  globalAssignments[draggingId] = cat;
+  draggingId = null;
+  renderCategories(); renderProductList(); updateProgress();
+}
+
+function updateProgress() {
+  const total = brandProducts.length;
+  const done = brandProducts.filter(p => globalAssignments[p.product_id]).length;
+  const pct = total ? Math.round(done / total * 100) : 0;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${done}/${total} 已分類`;
+}
+
+// ═══════════════════════════════════════════
+// SAVE & UTILS
+// ═══════════════════════════════════════════
+function saveJSON() {
+  const updated = allProducts.map(p => {
+    return { ...p, major_category: globalAssignments[p.product_id] || "" };
+  });
+  const blob = new Blob([JSON.stringify(updated, null, 4)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'product.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('✅ 已下載更新後的 product.json（包含所有品牌的調整）', true);
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+}
+
+let toastTimer;
+function showToast(msg, success) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (success ? ' success' : '');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.className = 'toast'; }, 3000);
+}
+
+document.addEventListener('click', () => {
+  document.querySelectorAll('.chip-menu.open').forEach(m => m.classList.remove('open'));
+});
+
+init();
+</script>
+</body>
+</html>

@@ -2370,7 +2370,7 @@
             // 4. 音效
             playBleep('A3', '32n');
         }
- function renderLandingPage(catData) {
+		function renderLandingPage(catData) {
             const landingIndexContainer = document.getElementById('data-index');
             const previewBg = document.getElementById('index-preview-bg');
             if (!landingIndexContainer) return;
@@ -2427,13 +2427,15 @@
                 iconWrapper.className = 'flex flex-col items-center gap-3 group cursor-pointer';
                 iconWrapper.onclick = () => showProductGrid(mainCategory.brand);
 
-                // Circle with Image
+               // Circle Container
                 const circle = document.createElement('div');
-                circle.className = 'w-20 h-20 md:w-28 md:h-28 rounded-full border border-gray-300 group-hover:border-[#FF3333] group-hover:scale-105 transition-all duration-300 relative overflow-hidden bg-white';
+                // 確保加上 flex 置中，並保留 overflow-hidden 裁切成圓形
+                circle.className = 'w-20 h-20 md:w-28 md:h-28 rounded-full border border-gray-300 group-hover:border-[#FF3333] group-hover:scale-105 transition-all duration-300 relative overflow-hidden bg-white flex justify-center items-center';
 
                 const img = document.createElement('img');
                 img.src = coverImage;
-                img.className = 'w-full h-full rounded-full object-cover filter group-hover:grayscale-0 transition-all duration-300';
+                // 【關鍵】加上 scale-125 (放大125%) 或是 scale-[1.6] (放大160%)，把原圖的白邊擠出去
+                img.className = 'w-full h-full object-cover scale-[1.6] filter group-hover:grayscale-0 transition-all duration-300';
 
                 circle.appendChild(img);
 

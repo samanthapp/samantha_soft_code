@@ -1702,8 +1702,8 @@
                 });
                 Object.keys(categories).forEach(main => {
                     categories[main].sort((a, b) => {
-                        if (a === '玩偶/玩具') return -1;
-                        if (b === '玩偶/玩具') return 1;
+                        if (a === '玩偶吊飾') return -1;
+                        if (b === '玩偶吊飾') return 1;
                         return a.localeCompare(b);
                     });
                 });
@@ -1819,7 +1819,7 @@
                         }))
                     };
                 });
-                categoryData = { "內褲兔 (Opanchu)": ["玩偶/玩具"], "三麗鷗 (Sanrio)": ["玩偶/玩具"] };
+                categoryData = { "內褲兔 Opanchu": ["玩偶吊飾"], "夢奇奇": ["玩偶吊飾"], "Tamagotchi": ["玩偶吊飾"], "Sanrio": ["玩偶吊飾"], "Chiikawa": ["玩偶吊飾"] };
                 initApp();
             }
         }

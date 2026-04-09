@@ -2370,28 +2370,58 @@
             // 4. 音效
             playBleep('A3', '32n');
         }
-        function renderLandingPage(catData) {
+ function renderLandingPage(catData) {
             const landingIndexContainer = document.getElementById('data-index');
             const previewBg = document.getElementById('index-preview-bg');
             if (!landingIndexContainer) return;
 
             // 清除除了 previewBg 以外的內容
-            // 先保留 previewBg 元素
             const bgElement = landingIndexContainer.querySelector('#index-preview-bg');
             landingIndexContainer.innerHTML = '';
             if (bgElement) landingIndexContainer.appendChild(bgElement);
 
             // ============================================
-            // NEW: Render Icon Row for Brands
+            // NEW: Render Icon Row for Brands (嚴格過濾娃娃/玩偶吊飾)
             // ============================================
             const iconContainer = document.createElement('div');
-            // Flex container: wrap items, center them, add gap
-            // 修正：調整 gap 與 py，手機版更緊湊
             iconContainer.className = 'flex flex-wrap justify-center gap-4 md:gap-10 py-6 md:py-10 px-4 w-full border-b border-gray-200';
 
+            // 1. 從所有商品中取得不重複的品牌名稱 (category_main)
+            const uniqueBrands = [...new Set(allProducts.map(p => p.category_main).filter(Boolean))];
 
-            featuredCategories.forEach((mainCategory, index) => {
-                const coverImage = mainCategory.coverImage ? mainCategory.coverImage : 'https://placehold.co/800x600/BBBBBB/333333?text=Category';
+            // 2. 建立動態的分類陣列，並進行嚴格篩選
+            const dynamicCategories = [];
+
+            uniqueBrands.forEach(brand => {
+                // 優先尋找該品牌下，category_sub 包含 "娃娃" 的第一筆商品
+                let repProduct = allProducts.find(p => 
+                    p.category_main === brand && 
+                    p.category_sub && 
+                    p.category_sub.includes('娃娃')
+                );
+
+                // 如果該品牌沒有 "娃娃"，則改找 "玩偶吊飾"
+                if (!repProduct) {
+                    repProduct = allProducts.find(p => 
+                        p.category_main === brand && 
+                        p.category_sub && 
+                        p.category_sub.includes('玩偶吊飾')
+                    );
+                }
+
+                // 【關鍵】只有當找到 "娃娃" 或 "玩偶吊飾" 的商品時，才將此品牌加入顯示陣列
+                if (repProduct) {
+                    dynamicCategories.push({
+                        brand: brand,
+                        coverImage: repProduct.primaryImage || 'https://placehold.co/800x600/BBBBBB/333333?text=Category'
+                    });
+                }
+            });
+
+            // 3. 渲染動態生成的品牌圖示
+            dynamicCategories.forEach((mainCategory, index) => {
+                const coverImage = mainCategory.coverImage;
+                
                 // Wrapper
                 const iconWrapper = document.createElement('div');
                 iconWrapper.className = 'flex flex-col items-center gap-3 group cursor-pointer';
@@ -2403,14 +2433,13 @@
 
                 const img = document.createElement('img');
                 img.src = coverImage;
-                img.className = 'w-full h-full rounded-full object-cover filter  group-hover:grayscale-0 transition-all duration-300';
+                img.className = 'w-full h-full rounded-full object-cover filter group-hover:grayscale-0 transition-all duration-300';
 
                 circle.appendChild(img);
 
                 // Label Text
                 const label = document.createElement('span');
                 label.className = 'font-mono text-[10px] md:text-xs tracking-widest text-gray-400 group-hover:text-black transition-colors text-center max-w-[100px] leading-tight';
-                // Only take the name before parenthesis for cleaner look, or replace parens with new line
                 label.innerHTML = mainCategory.brand.replace(' (', '<br>(');
 
                 iconWrapper.appendChild(circle);
@@ -2430,13 +2459,14 @@
 
                 iconContainer.appendChild(iconWrapper);
             });
+            
             landingIndexContainer.appendChild(iconContainer);
 
 
             // ============================================
             // Render Art Item as List Item (Bottom)
             // ============================================
-            const artIndex = featuredCategories.length + 1; // e.g. 05
+            const artIndex = dynamicCategories.length + 1; 
             const num = artIndex < 10 ? `0${artIndex}` : artIndex;
 
             const artDiv = document.createElement('div');
@@ -2448,13 +2478,13 @@
                 <span class="text-[#FF3333] font-bold"> :: [ HIDDEN_ARCHIVE ]</span>
                 <span class="text-xs text-[#FF3333]">[ STATUS: CORRUPTED ]</span>
             `;
-            // Add Hover Events for Art
+            
             artDiv.addEventListener('mouseenter', () => {
                 const imgUrl = artDiv.dataset.img;
                 if (previewBg) {
                     previewBg.src = imgUrl;
                     previewBg.style.opacity = '0.15';
-                    playBleep('F#2', '32n'); // Glitch sound
+                    playBleep('F#2', '32n'); 
                 }
             });
             artDiv.addEventListener('mouseleave', () => {

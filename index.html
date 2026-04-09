@@ -2778,7 +2778,7 @@
                 const tags = p.tags || [];
                 const name = p.product_name || "";
                 const brand = p.brand || "";
-                const cat = p.product_category || "";
+                const cat = p.major_category || "";
 
                 // A. Zone Filter (Hard Filter)
                 // 如果是 'all' (例如從詳情頁返回)，則顯示所有，否則嚴格比對品牌
@@ -2793,7 +2793,7 @@
                 // C. Type Filter (完全比對 major_category)
                 if (activeFilters.type) {
                     const k = activeFilters.type;
-                    const typeMatch = (p.category_sub || '').includes(k) || (p.product_category || '').includes(k);
+                    const typeMatch = (p.category_sub || '').includes(k) || (p.major_category || '').includes(k);
                     if (!typeMatch) return false;
                 }
 
